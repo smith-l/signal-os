@@ -1,6 +1,7 @@
 import './style.css'
 
 import { Applications } from './modules/career/Applications.js'
+import { Stories } from './modules/career/Stories.js'
 import { Tasks } from './modules/tasks/Tasks.js'
 import { Projects } from './modules/projects/Projects.js'
 import { Knowledge } from './modules/knowledge/Knowledge.js'
@@ -10,9 +11,11 @@ let draggedCardId = null
 
 async function renderModule() {
   if (currentModule === 'career') return await Applications()
+  if (currentModule === 'stories') return await Stories()
   if (currentModule === 'tasks') return Tasks()
   if (currentModule === 'projects') return Projects()
   if (currentModule === 'knowledge') return Knowledge()
+
   return await Applications()
 }
 
@@ -115,6 +118,10 @@ function attachModuleHandlers() {
   const saveButton = document.querySelector('#save-application')
   const closePanel = document.querySelector('#close-panel')
 
+  const addStoryButton = document.querySelector('#add-story-btn')
+  const storyForm = document.querySelector('#story-form')
+  const saveStoryButton = document.querySelector('#save-story')
+
   if (addButton && form) {
     addButton.addEventListener('click', () => {
       form.style.display = 'block'
@@ -141,6 +148,31 @@ function attachModuleHandlers() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ company, role_title: role, status: 'Applied' })
+      })
+
+      await renderApp()
+    })
+  }
+
+  if (addStoryButton && storyForm) {
+    addStoryButton.addEventListener('click', () => {
+      storyForm.style.display = 'block'
+    })
+  }
+
+  if (saveStoryButton) {
+    saveStoryButton.addEventListener('click', async () => {
+      const title = document.querySelector('#story-title').value
+
+      if (!title) {
+        alert('Please enter a story title')
+        return
+      }
+
+      await fetch('/api/stories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title })
       })
 
       await renderApp()
@@ -199,7 +231,8 @@ async function renderApp() {
       <aside class="sidebar">
         <h1>Signal OS</h1>
         <nav>
-          <button data-module="career" class="${currentModule === 'career' ? 'active' : ''}">Career Hub</button>
+          <button data-module="career" class="${currentModule === 'career' ? 'active' : ''}">Applications</button>
+          <button data-module="stories" class="${currentModule === 'stories' ? 'active' : ''}">Stories</button>
           <button data-module="tasks" class="${currentModule === 'tasks' ? 'active' : ''}">Task Hub</button>
           <button data-module="projects" class="${currentModule === 'projects' ? 'active' : ''}">Project Hub</button>
           <button data-module="knowledge" class="${currentModule === 'knowledge' ? 'active' : ''}">Knowledge Hub</button>
