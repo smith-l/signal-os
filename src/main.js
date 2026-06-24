@@ -15,12 +15,16 @@ async function renderModule() {
   if (currentModule === 'tasks') return Tasks()
   if (currentModule === 'projects') return Projects()
   if (currentModule === 'knowledge') return Knowledge()
-
   return await Applications()
 }
 
 async function getApplications() {
   const response = await fetch('/api/applications')
+  return await response.json()
+}
+
+async function getStories() {
+  const response = await fetch('/api/stories')
   return await response.json()
 }
 
@@ -32,10 +36,17 @@ async function updateApplication(application) {
   })
 }
 
+async function updateStory(story) {
+  await fetch('/api/stories', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(story)
+  })
+}
+
 async function updateApplicationStatus(id, status) {
   const applications = await getApplications()
   const application = applications.find(app => String(app.id) === String(id))
-
   if (!application) return
 
   application.status = status
@@ -46,7 +57,6 @@ async function updateApplicationStatus(id, status) {
 async function openApplicationPanel(id) {
   const applications = await getApplications()
   const application = applications.find(app => String(app.id) === String(id))
-
   if (!application) return
 
   const panel = document.querySelector('#application-panel')
@@ -112,6 +122,60 @@ async function openApplicationPanel(id) {
   })
 }
 
+async function openStoryPanel(id) {
+  const stories = await getStories()
+  const story = stories.find(item => String(item.id) === String(id))
+  if (!story) return
+
+  const panel = document.querySelector('#story-panel')
+  const content = document.querySelector('#story-panel-content')
+
+  content.innerHTML = `
+    <h2>${story.title}</h2>
+    <p>${story.tags || 'No tags'}</p>
+
+    <label>Title</label>
+    <input id="story-panel-title" value="${story.title || ''}" />
+
+    <label>Situation</label>
+    <textarea id="story-panel-situation">${story.situation || ''}</textarea>
+
+    <label>Task</label>
+    <textarea id="story-panel-task">${story.task || ''}</textarea>
+
+    <label>Action</label>
+    <textarea id="story-panel-action">${story.action || ''}</textarea>
+
+    <label>Result</label>
+    <textarea id="story-panel-result">${story.result || ''}</textarea>
+
+    <label>Tags</label>
+    <input id="story-panel-tags" value="${story.tags || ''}" />
+
+    <label>Competency</label>
+    <input id="story-panel-competency" value="${story.competency || ''}" />
+
+    <button id="save-story-panel" class="panel-save">Save Story</button>
+  `
+
+  panel.classList.remove('hidden')
+
+  document.querySelector('#save-story-panel').addEventListener('click', async () => {
+    await updateStory({
+      id: story.id,
+      title: document.querySelector('#story-panel-title').value,
+      situation: document.querySelector('#story-panel-situation').value,
+      task: document.querySelector('#story-panel-task').value,
+      action: document.querySelector('#story-panel-action').value,
+      result: document.querySelector('#story-panel-result').value,
+      tags: document.querySelector('#story-panel-tags').value,
+      competency: document.querySelector('#story-panel-competency').value
+    })
+
+    await renderApp()
+  })
+}
+
 function attachModuleHandlers() {
   const addButton = document.querySelector('#add-application-btn')
   const form = document.querySelector('#application-form')
@@ -121,6 +185,7 @@ function attachModuleHandlers() {
   const addStoryButton = document.querySelector('#add-story-btn')
   const storyForm = document.querySelector('#story-form')
   const saveStoryButton = document.querySelector('#save-story')
+  const closeStoryPanel = document.querySelector('#close-story-panel')
 
   if (addButton && form) {
     addButton.addEventListener('click', () => {
@@ -131,6 +196,12 @@ function attachModuleHandlers() {
   if (closePanel) {
     closePanel.addEventListener('click', () => {
       document.querySelector('#application-panel').classList.add('hidden')
+    })
+  }
+
+  if (closeStoryPanel) {
+    closeStoryPanel.addEventListener('click', () => {
+      document.querySelector('#story-panel').classList.add('hidden')
     })
   }
 
@@ -178,6 +249,12 @@ function attachModuleHandlers() {
       await renderApp()
     })
   }
+
+  document.querySelectorAll('.story-card').forEach(card => {
+    card.addEventListener('click', async () => {
+      await openStoryPanel(card.dataset.storyId)
+    })
+  })
 
   document.querySelectorAll('.status-select').forEach(select => {
     select.addEventListener('change', async () => {
