@@ -289,3 +289,15 @@ body {
   color: white;
   font-weight: 700;
 }
+.story-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill,minmax(300px,1fr));
+  gap: 20px;
+}
+.story-card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid #ddd7ca;
+  cursor: pointer;
+}

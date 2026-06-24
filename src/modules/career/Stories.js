@@ -20,14 +20,20 @@ export async function Stories() {
 
     <div class="story-grid">
       ${stories.map(story => `
-        <article class="story-card">
+        <article
+          class="story-card"
+          data-story-id="${story.id}"
+        >
           <h3>${story.title}</h3>
 
-          <p>
-            ${story.tags || 'No tags'}
-          </p>
+          <p>${story.tags || 'No tags'}</p>
         </article>
       `).join('')}
+    </div>
+
+    <div id="story-panel" class="application-panel hidden">
+      <button id="close-story-panel" class="panel-close">×</button>
+      <div id="story-panel-content"></div>
     </div>
   `
 }
