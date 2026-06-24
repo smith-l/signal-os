@@ -16,52 +16,116 @@ async function renderModule() {
   return await Applications()
 }
 
-function attachModuleHandlers() {
-  document.querySelectorAll('.application-card').forEach(card => {
+async function getApplications() {
+  const response = await fetch('/api/applications')
+  return await response.json()
+}
 
-    card.addEventListener('click', async () => {
+async function updateApplication(application) {
+  await fetch('/api/applications', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(application)
+  })
+}
 
-      const id = card.dataset.id
+async function updateApplicationStatus(id, status) {
+  const applications = await getApplications()
+  const application = applications.find(app => String(app.id) === String(id))
 
-      const response =
-        await fetch('/api/applications')
+  if (!application) return
 
-      const applications =
-        await response.json()
+  application.status = status
+  await updateApplication(application)
+  await renderApp()
+}
 
-      const application =
-        applications.find(
-          app => String(app.id) === id
-        )
+async function openApplicationPanel(id) {
+  const applications = await getApplications()
+  const application = applications.find(app => String(app.id) === String(id))
 
-      const panel =
-        document.querySelector('#application-panel')
+  if (!application) return
 
-      const content =
-        document.querySelector('#application-panel-content')
+  const panel = document.querySelector('#application-panel')
+  const content = document.querySelector('#application-panel-content')
 
-      content.innerHTML = `
-        <h2>${application.company}</h2>
+  content.innerHTML = `
+    <h2>${application.company}</h2>
+    <p>${application.role_title}</p>
 
-        <p>${application.role_title}</p>
+    <label>Company</label>
+    <input id="panel-company" value="${application.company || ''}" />
 
-        <hr>
+    <label>Role</label>
+    <input id="panel-role" value="${application.role_title || ''}" />
 
-        <p><strong>Status</strong><br>${application.status}</p>
+    <label>Status</label>
+    <select id="panel-status">
+      ${['Applied', 'Prep', 'Hiring Manager', 'Panel', 'Offer', 'Closed'].map(status => `
+        <option value="${status}" ${status === application.status ? 'selected' : ''}>
+          ${status}
+        </option>
+      `).join('')}
+    </select>
 
-        <p><strong>Recruiter</strong><br>${application.recruiter || ''}</p>
+    <label>Recruiter</label>
+    <input id="panel-recruiter" value="${application.recruiter || ''}" />
 
-        <p><strong>Salary</strong><br>${application.salary || ''}</p>
+    <label>Salary</label>
+    <input id="panel-salary" value="${application.salary || ''}" />
 
-        <p><strong>Notes</strong><br>${application.notes || ''}</p>
-      `
+    <label>Location</label>
+    <input id="panel-location" value="${application.location || ''}" />
 
-      panel.classList.remove('hidden')
+    <label>Job Link</label>
+    <input id="panel-job-link" value="${application.job_link || ''}" />
 
+    <label>Next Action</label>
+    <input id="panel-next-action" value="${application.next_action || ''}" />
+
+    <label>Notes</label>
+    <textarea id="panel-notes">${application.notes || ''}</textarea>
+
+    <button id="save-panel" class="panel-save">Save Changes</button>
+  `
+
+  panel.classList.remove('hidden')
+
+  document.querySelector('#save-panel').addEventListener('click', async () => {
+    await updateApplication({
+      id: application.id,
+      company: document.querySelector('#panel-company').value,
+      role_title: document.querySelector('#panel-role').value,
+      status: document.querySelector('#panel-status').value,
+      recruiter: document.querySelector('#panel-recruiter').value,
+      salary: document.querySelector('#panel-salary').value,
+      location: document.querySelector('#panel-location').value,
+      job_link: document.querySelector('#panel-job-link').value,
+      next_action: document.querySelector('#panel-next-action').value,
+      notes: document.querySelector('#panel-notes').value
     })
 
+    await renderApp()
   })
+}
+
+function attachModuleHandlers() {
+  const addButton = document.querySelector('#add-application-btn')
+  const form = document.querySelector('#application-form')
   const saveButton = document.querySelector('#save-application')
+  const closePanel = document.querySelector('#close-panel')
+
+  if (addButton && form) {
+    addButton.addEventListener('click', () => {
+      form.style.display = 'block'
+    })
+  }
+
+  if (closePanel) {
+    closePanel.addEventListener('click', () => {
+      document.querySelector('#application-panel').classList.add('hidden')
+    })
+  }
 
   if (saveButton) {
     saveButton.addEventListener('click', async () => {
@@ -86,6 +150,13 @@ function attachModuleHandlers() {
   document.querySelectorAll('.status-select').forEach(select => {
     select.addEventListener('change', async () => {
       await updateApplicationStatus(select.dataset.id, select.value)
+    })
+  })
+
+  document.querySelectorAll('.application-card').forEach(card => {
+    card.addEventListener('click', async event => {
+      if (event.target.tagName === 'SELECT') return
+      await openApplicationPanel(card.dataset.id)
     })
   })
 
@@ -120,16 +191,6 @@ function attachModuleHandlers() {
       await updateApplicationStatus(draggedCardId, zone.dataset.status)
     })
   })
-}
-
-async function updateApplicationStatus(id, status) {
-  await fetch('/api/applications', {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id, status })
-  })
-
-  await renderApp()
 }
 
 async function renderApp() {

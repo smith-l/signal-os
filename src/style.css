@@ -247,3 +247,45 @@ body {
 .hidden {
   display: none;
 }
+.application-panel label {
+  display: block;
+  margin-top: 14px;
+  margin-bottom: 6px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.application-panel input,
+.application-panel select,
+.application-panel textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
+  border: 1px solid #ddd7ca;
+  border-radius: 10px;
+  font: inherit;
+}
+
+.application-panel textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.panel-close {
+  float: right;
+  border: 0;
+  background: transparent;
+  font-size: 28px;
+  cursor: pointer;
+}
+
+.panel-save {
+  margin-top: 20px;
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 0;
+  background: #202733;
+  color: white;
+  font-weight: 700;
+}
