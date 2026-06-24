@@ -16,6 +16,44 @@ async function renderModule() {
   return await Applications()
 }
 
+function attachModuleHandlers() {
+  const addButton = document.querySelector('#add-application-btn')
+  const form = document.querySelector('#application-form')
+  const saveButton = document.querySelector('#save-application')
+
+  if (addButton && form) {
+    addButton.addEventListener('click', () => {
+      form.style.display = 'block'
+    })
+  }
+
+  if (saveButton) {
+    saveButton.addEventListener('click', async () => {
+      const company = document.querySelector('#company').value
+      const role = document.querySelector('#role').value
+
+      if (!company || !role) {
+        alert('Please enter a company and role')
+        return
+      }
+
+      await fetch('/api/applications', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          company,
+          role_title: role,
+          status: 'Applied'
+        })
+      })
+
+      await renderApp()
+    })
+  }
+}
+
 async function renderApp() {
   document.querySelector('#app').innerHTML = `
     <main class="app-shell">
@@ -41,44 +79,10 @@ async function renderApp() {
     button.addEventListener('click', async () => {
       currentModule = button.dataset.module
       await renderApp()
-      const addButton =
-  document.querySelector('#add-application-btn')
-
-if (addButton) {
-  addButton.addEventListener('click', () => {
-    document.querySelector('#application-form').style.display =
-      'block'
-  })
-}
-
-const saveButton =
-  document.querySelector('#save-application')
-
-if (saveButton) {
-  saveButton.addEventListener('click', async () => {
-
-    const company =
-      document.querySelector('#company').value
-
-    const role =
-      document.querySelector('#role').value
-
-    await fetch('/api/applications', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        company,
-        role_title: role
-      })
-    })
-
-    await renderApp()
-  })
-}
     })
   })
+
+  attachModuleHandlers()
 }
 
 renderApp()
