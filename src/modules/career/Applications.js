@@ -50,6 +50,7 @@ export async function Applications() {
     </section>
 
     <div id="application-panel" class="application-panel hidden">
+      <button id="close-panel" class="panel-close">×</button>
       <div id="application-panel-content"></div>
     </div>
   `
