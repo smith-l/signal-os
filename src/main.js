@@ -17,6 +17,50 @@ async function renderModule() {
 }
 
 function attachModuleHandlers() {
+  document.querySelectorAll('.application-card').forEach(card => {
+
+    card.addEventListener('click', async () => {
+
+      const id = card.dataset.id
+
+      const response =
+        await fetch('/api/applications')
+
+      const applications =
+        await response.json()
+
+      const application =
+        applications.find(
+          app => String(app.id) === id
+        )
+
+      const panel =
+        document.querySelector('#application-panel')
+
+      const content =
+        document.querySelector('#application-panel-content')
+
+      content.innerHTML = `
+        <h2>${application.company}</h2>
+
+        <p>${application.role_title}</p>
+
+        <hr>
+
+        <p><strong>Status</strong><br>${application.status}</p>
+
+        <p><strong>Recruiter</strong><br>${application.recruiter || ''}</p>
+
+        <p><strong>Salary</strong><br>${application.salary || ''}</p>
+
+        <p><strong>Notes</strong><br>${application.notes || ''}</p>
+      `
+
+      panel.classList.remove('hidden')
+
+    })
+
+  })
   const saveButton = document.querySelector('#save-application')
 
   if (saveButton) {

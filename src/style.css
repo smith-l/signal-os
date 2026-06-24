@@ -230,3 +230,20 @@ body {
   outline: 2px dashed #202733;
   outline-offset: -6px;
 }
+.application-panel {
+  position: fixed;
+  right: 0;
+  top: 0;
+  width: 420px;
+  height: 100vh;
+  background: white;
+  border-left: 1px solid #ddd;
+  box-shadow: -10px 0 30px rgba(0,0,0,.1);
+  padding: 24px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.hidden {
+  display: none;
+}

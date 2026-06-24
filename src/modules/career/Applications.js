@@ -54,7 +54,14 @@ export async function Applications() {
           ${applications
             .filter(app => app.status === status)
             .map(app => `
-              <article class="card draggable-card" draggable="true" data-id="${app.id}">
+              <article
+              <div id="application-panel" class="application-panel hidden">
+  <div id="application-panel-content">
+  </div>
+</div>
+  class="card draggable-card application-card"
+  draggable="true"
+  data-id="${app.id}"
                 <h4>${app.company}</h4>
                 <p>${app.role_title}</p>
               <small>${app.next_action || ''}</small>
