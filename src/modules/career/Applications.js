@@ -1,4 +1,6 @@
-export function Applications() {
+export async function Applications() {
+  const response = await fetch('/api/applications')
+  const applications = await response.json()
 
   const statuses = [
     'Applied',
@@ -7,24 +9,6 @@ export function Applications() {
     'Panel',
     'Offer',
     'Closed'
-  ]
-
-  const applications = [
-    {
-      company: 'Atlassian',
-      role: 'Senior Manager Solutions Engineering',
-      status: 'Hiring Manager'
-    },
-    {
-      company: 'Workday',
-      role: 'Manager Presales',
-      status: 'Hiring Manager'
-    },
-    {
-      company: 'Splunk',
-      role: 'AVP Solutions Engineering',
-      status: 'Applied'
-    }
   ]
 
   return `
@@ -41,7 +25,7 @@ export function Applications() {
       </article>
 
       <article>
-        <span>2</span>
+        <span>${applications.filter(a => a.status === 'Hiring Manager').length}</span>
         <p>Hiring Manager</p>
       </article>
 
@@ -61,7 +45,8 @@ export function Applications() {
             .map(app => `
               <article class="card">
                 <h4>${app.company}</h4>
-                <p>${app.role}</p>
+                <p>${app.role_title}</p>
+                <small>${app.next_action || ''}</small>
               </article>
             `)
             .join('')}

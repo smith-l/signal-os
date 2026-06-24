@@ -7,16 +7,16 @@ import { Knowledge } from './modules/knowledge/Knowledge.js'
 
 let currentModule = 'career'
 
-function renderModule() {
-  if (currentModule === 'career') return Applications()
+async function renderModule() {
+  if (currentModule === 'career') return await Applications()
   if (currentModule === 'tasks') return Tasks()
   if (currentModule === 'projects') return Projects()
   if (currentModule === 'knowledge') return Knowledge()
 
-  return Applications()
+  return await Applications()
 }
 
-function renderApp() {
+async function renderApp() {
   document.querySelector('#app').innerHTML = `
     <main class="app-shell">
       <aside class="sidebar">
@@ -30,15 +30,17 @@ function renderApp() {
       </aside>
 
       <section class="main-panel">
-        ${renderModule()}
+        <div id="module-content">Loading...</div>
       </section>
     </main>
   `
 
+  document.querySelector('#module-content').innerHTML = await renderModule()
+
   document.querySelectorAll('[data-module]').forEach(button => {
-    button.addEventListener('click', () => {
+    button.addEventListener('click', async () => {
       currentModule = button.dataset.module
-      renderApp()
+      await renderApp()
     })
   })
 }
