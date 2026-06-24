@@ -214,3 +214,19 @@ body {
   border: 1px solid #ddd7ca;
   background: white;
 }
+.draggable-card {
+  cursor: grab;
+}
+
+.draggable-card:active {
+  cursor: grabbing;
+}
+
+.dragging {
+  opacity: 0.5;
+}
+
+.drag-over {
+  outline: 2px dashed #202733;
+  outline-offset: -6px;
+}

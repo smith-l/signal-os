@@ -48,13 +48,13 @@ export async function Applications() {
 
     <section class="board">
       ${statuses.map(status => `
-        <div class="column">
+        <div class="column drop-zone" data-status="${status}">
           <h3>${status}</h3>
 
           ${applications
             .filter(app => app.status === status)
             .map(app => `
-              <article class="card">
+              <article class="card draggable-card" draggable="true" data-id="${app.id}">
                 <h4>${app.company}</h4>
                 <p>${app.role_title}</p>
               <small>${app.next_action || ''}</small>

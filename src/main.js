@@ -6,26 +6,18 @@ import { Projects } from './modules/projects/Projects.js'
 import { Knowledge } from './modules/knowledge/Knowledge.js'
 
 let currentModule = 'career'
+let draggedCardId = null
 
 async function renderModule() {
   if (currentModule === 'career') return await Applications()
   if (currentModule === 'tasks') return Tasks()
   if (currentModule === 'projects') return Projects()
   if (currentModule === 'knowledge') return Knowledge()
-
   return await Applications()
 }
 
 function attachModuleHandlers() {
-  const addButton = document.querySelector('#add-application-btn')
-  const form = document.querySelector('#application-form')
   const saveButton = document.querySelector('#save-application')
-
-  if (addButton && form) {
-    addButton.addEventListener('click', () => {
-      form.style.display = 'block'
-    })
-  }
 
   if (saveButton) {
     saveButton.addEventListener('click', async () => {
@@ -39,14 +31,8 @@ function attachModuleHandlers() {
 
       await fetch('/api/applications', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          company,
-          role_title: role,
-          status: 'Applied'
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ company, role_title: role, status: 'Applied' })
       })
 
       await renderApp()
@@ -55,20 +41,51 @@ function attachModuleHandlers() {
 
   document.querySelectorAll('.status-select').forEach(select => {
     select.addEventListener('change', async () => {
-      await fetch('/api/applications', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          id: select.dataset.id,
-          status: select.value
-        })
-      })
-
-      await renderApp()
+      await updateApplicationStatus(select.dataset.id, select.value)
     })
   })
+
+  document.querySelectorAll('.draggable-card').forEach(card => {
+    card.addEventListener('dragstart', () => {
+      draggedCardId = card.dataset.id
+      card.classList.add('dragging')
+    })
+
+    card.addEventListener('dragend', () => {
+      card.classList.remove('dragging')
+      draggedCardId = null
+    })
+  })
+
+  document.querySelectorAll('.drop-zone').forEach(zone => {
+    zone.addEventListener('dragover', event => {
+      event.preventDefault()
+      zone.classList.add('drag-over')
+    })
+
+    zone.addEventListener('dragleave', () => {
+      zone.classList.remove('drag-over')
+    })
+
+    zone.addEventListener('drop', async event => {
+      event.preventDefault()
+      zone.classList.remove('drag-over')
+
+      if (!draggedCardId) return
+
+      await updateApplicationStatus(draggedCardId, zone.dataset.status)
+    })
+  })
+}
+
+async function updateApplicationStatus(id, status) {
+  await fetch('/api/applications', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, status })
+  })
+
+  await renderApp()
 }
 
 async function renderApp() {
