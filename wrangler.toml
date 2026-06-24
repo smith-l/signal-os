@@ -1,0 +1,8 @@
+name = "signal-os"
+compatibility_date = "2026-06-24"
+pages_build_output_dir = "dist"
+
+[[d1_databases]]
+binding = "signal_os_db"
+database_name = "signal-os-db"
+database_id = "1f092911-57c1-451a-9db0-0451a462629b"
