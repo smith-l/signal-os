@@ -12,12 +12,7 @@ export async function onRequestPost(context) {
   await context.env.signal_os_db
     .prepare(`
       INSERT INTO applications
-      (
-        company,
-        role_title,
-        status,
-        next_action
-      )
+      (company, role_title, status, next_action)
       VALUES (?, ?, ?, ?)
     `)
     .bind(
@@ -28,7 +23,20 @@ export async function onRequestPost(context) {
     )
     .run()
 
-  return Response.json({
-    success: true
-  })
+  return Response.json({ success: true })
+}
+
+export async function onRequestPut(context) {
+  const body = await context.request.json()
+
+  await context.env.signal_os_db
+    .prepare(`
+      UPDATE applications
+      SET status = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `)
+    .bind(body.status, body.id)
+    .run()
+
+  return Response.json({ success: true })
 }

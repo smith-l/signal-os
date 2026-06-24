@@ -57,7 +57,15 @@ export async function Applications() {
               <article class="card">
                 <h4>${app.company}</h4>
                 <p>${app.role_title}</p>
-                <small>${app.next_action || ''}</small>
+              <small>${app.next_action || ''}</small>
+
+<select class="status-select" data-id="${app.id}">
+  ${statuses.map(option => `
+    <option value="${option}" ${option === app.status ? 'selected' : ''}>
+      ${option}
+    </option>
+  `).join('')}
+</select>
               </article>
             `)
             .join('')}

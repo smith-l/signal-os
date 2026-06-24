@@ -206,3 +206,11 @@ body {
   background: #202733;
   color: white;
 }
+.status-select {
+  margin-top: 12px;
+  width: 100%;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #ddd7ca;
+  background: white;
+}
