@@ -15,8 +15,19 @@ export async function Applications() {
     <header class="page-header">
       <p class="eyebrow">Career Hub</p>
       <h2>Applications</h2>
-      <p>Track applications, interview stages and next actions.</p>
+
+      <button id="add-application-btn">
+        + Add Application
+      </button>
     </header>
+
+    <div id="application-form" style="display:none;margin-bottom:24px;">
+      <input id="company" placeholder="Company" />
+      <input id="role" placeholder="Role" />
+      <button id="save-application">
+        Save
+      </button>
+    </div>
 
     <section class="summary-grid">
       <article>

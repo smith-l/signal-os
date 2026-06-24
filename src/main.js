@@ -41,6 +41,42 @@ async function renderApp() {
     button.addEventListener('click', async () => {
       currentModule = button.dataset.module
       await renderApp()
+      const addButton =
+  document.querySelector('#add-application-btn')
+
+if (addButton) {
+  addButton.addEventListener('click', () => {
+    document.querySelector('#application-form').style.display =
+      'block'
+  })
+}
+
+const saveButton =
+  document.querySelector('#save-application')
+
+if (saveButton) {
+  saveButton.addEventListener('click', async () => {
+
+    const company =
+      document.querySelector('#company').value
+
+    const role =
+      document.querySelector('#role').value
+
+    await fetch('/api/applications', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        company,
+        role_title: role
+      })
+    })
+
+    await renderApp()
+  })
+}
     })
   })
 }
