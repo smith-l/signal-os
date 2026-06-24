@@ -28,6 +28,27 @@ async function getStories() {
   return await response.json()
 }
 
+async function getAllStories() {
+  const response = await fetch('/api/all-stories')
+  return await response.json()
+}
+
+async function getLinkedStories(applicationId) {
+  const response = await fetch(`/api/application-stories?application_id=${applicationId}`)
+  return await response.json()
+}
+
+async function saveLinkedStories(applicationId, storyIds) {
+  await fetch('/api/application-stories', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      application_id: applicationId,
+      story_ids: storyIds
+    })
+  })
+}
+
 async function updateApplication(application) {
   await fetch('/api/applications', {
     method: 'PUT',
@@ -58,6 +79,10 @@ async function openApplicationPanel(id) {
   const applications = await getApplications()
   const application = applications.find(app => String(app.id) === String(id))
   if (!application) return
+
+  const allStories = await getAllStories()
+  const linkedStories = await getLinkedStories(application.id)
+  const linkedStoryIds = linkedStories.map(item => String(item.story_id))
 
   const panel = document.querySelector('#application-panel')
   const content = document.querySelector('#application-panel-content')
@@ -99,12 +124,35 @@ async function openApplicationPanel(id) {
     <label>Notes</label>
     <textarea id="panel-notes">${application.notes || ''}</textarea>
 
+    <section class="linked-stories-section">
+      <h3>Linked Stories</h3>
+
+      ${allStories.map(story => `
+        <label class="story-checkbox">
+          <input
+            type="checkbox"
+            class="linked-story-checkbox"
+            value="${story.id}"
+            ${linkedStoryIds.includes(String(story.id)) ? 'checked' : ''}
+          />
+          <span>
+            ${story.title}
+            <small>${story.tags || ''}</small>
+          </span>
+        </label>
+      `).join('')}
+    </section>
+
     <button id="save-panel" class="panel-save">Save Changes</button>
   `
 
   panel.classList.remove('hidden')
 
   document.querySelector('#save-panel').addEventListener('click', async () => {
+    const selectedStoryIds = Array
+      .from(document.querySelectorAll('.linked-story-checkbox:checked'))
+      .map(item => item.value)
+
     await updateApplication({
       id: application.id,
       company: document.querySelector('#panel-company').value,
@@ -117,6 +165,8 @@ async function openApplicationPanel(id) {
       next_action: document.querySelector('#panel-next-action').value,
       notes: document.querySelector('#panel-notes').value
     })
+
+    await saveLinkedStories(application.id, selectedStoryIds)
 
     await renderApp()
   })

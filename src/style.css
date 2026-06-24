@@ -301,3 +301,33 @@ body {
   border: 1px solid #ddd7ca;
   cursor: pointer;
 }
+.linked-stories-section {
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid #e5e1d8;
+}
+
+.story-checkbox {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px;
+  border: 1px solid #e5e1d8;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+.story-checkbox input {
+  width: auto;
+  margin-top: 4px;
+}
+
+.story-checkbox span {
+  display: grid;
+  gap: 4px;
+}
+
+.story-checkbox small {
+  color: #6b7280;
+}
