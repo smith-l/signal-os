@@ -25,8 +25,8 @@ import {
 } from './components/StoryPanel.js'
 
 import {
-  Sidebar
-} from './components/Sidebar.js'
+  AppShell
+} from './components/AppShell.js'
 
 let currentModule = 'career'
 let draggedCardId = null
@@ -177,17 +177,11 @@ function attachModuleHandlers() {
 }
 
 async function renderApp() {
-  document.querySelector('#app').innerHTML = `
-    <main class="app-shell">
-      ${Sidebar(currentModule)}
+  document.querySelector('#app').innerHTML =
+    AppShell(currentModule)
 
-      <section class="main-panel">
-        <div id="module-content">Loading...</div>
-      </section>
-    </main>
-  `
-
-  document.querySelector('#module-content').innerHTML = await renderModule()
+  document.querySelector('#module-content').innerHTML =
+    await renderModule()
 
   document.querySelectorAll('[data-module]').forEach(button => {
     button.addEventListener('click', async () => {
