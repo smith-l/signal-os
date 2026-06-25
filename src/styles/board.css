@@ -58,3 +58,25 @@
   outline: 2px dashed var(--accent);
   outline-offset: -6px;
 }
+.board {
+  grid-template-columns: repeat(6, 280px);
+  overflow-x: auto;
+  padding-bottom: 24px;
+}
+
+.column {
+  max-height: calc(100vh - 320px);
+  overflow-y: auto;
+}
+
+.card {
+  padding: 18px;
+}
+
+.card h4 {
+  font-size: 16px;
+}
+
+.card p {
+  line-height: 1.25;
+}
