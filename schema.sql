@@ -3,6 +3,13 @@ CREATE TABLE IF NOT EXISTS applications (
     company TEXT NOT NULL,
     role_title TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'Applied',
+    recruiter TEXT DEFAULT '',
+    salary TEXT DEFAULT '',
+    location TEXT DEFAULT '',
+    job_link TEXT DEFAULT '',
+    jira_id TEXT DEFAULT '',
+    prep_page_url TEXT DEFAULT '',
+    stability_check TEXT DEFAULT '',
     fit_summary TEXT,
     gap_summary TEXT,
     next_action TEXT,
@@ -41,4 +48,14 @@ CREATE TABLE IF NOT EXISTS ai_suggestions (
     body TEXT,
     status TEXT DEFAULT 'pending',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Junction table for application <-> story links
+CREATE TABLE IF NOT EXISTS application_stories (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    application_id INTEGER NOT NULL,
+    story_id INTEGER NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (application_id) REFERENCES applications(id),
+    FOREIGN KEY (story_id) REFERENCES stories(id)
 );

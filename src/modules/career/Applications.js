@@ -1,33 +1,77 @@
-import { ApplicationBoard } from '../../components/ApplicationBoard.js'
+export async function onRequestGet(context) {
+  const { results } = await context.env.signal_os_db
+    .prepare("SELECT * FROM applications ORDER BY created_at DESC")
+    .all()
 
-export async function Applications() {
-  const response = await fetch('/api/applications')
-  const applications = await response.json()
+  return Response.json(results)
+}
 
-  return `
-    <header class="page-header">
-      <p class="eyebrow">Career Hub</p>
-      <h2>Applications</h2>
-      <button id="add-application-btn">+ Add Application</button>
-    </header>
+export async function onRequestPost(context) {
+  const body = await context.request.json()
 
-    <div id="application-form" class="add-form" style="display:none;">
-      <input id="company" placeholder="Company" />
-      <input id="role" placeholder="Role" />
-      <button id="save-application">Save Application</button>
-    </div>
+  await context.env.signal_os_db
+    .prepare(`
+      INSERT INTO applications
+      (company, role_title, status, next_action, recruiter, salary, job_link, location, jira_id, prep_page_url, stability_check, notes)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `)
+    .bind(
+      body.company,
+      body.role_title,
+      body.status || 'Applied',
+      body.next_action || '',
+      body.recruiter || '',
+      body.salary || '',
+      body.job_link || '',
+      body.location || '',
+      body.jira_id || '',
+      body.prep_page_url || '',
+      body.stability_check || '',
+      body.notes || ''
+    )
+    .run()
 
-    <section class="summary-grid">
-      <article><span>${applications.length}</span><p>Applications</p></article>
-      <article><span>${applications.filter(a => a.status === 'Hiring Manager').length}</span><p>Hiring Manager</p></article>
-      <article><span>0</span><p>AI Suggestions</p></article>
-    </section>
+  return Response.json({ success: true })
+}
 
-    ${ApplicationBoard(applications)}
+export async function onRequestPut(context) {
+  const body = await context.request.json()
 
-    <div id="application-panel" class="application-panel hidden">
-      <button id="close-panel" class="panel-close">×</button>
-      <div id="application-panel-content"></div>
-    </div>
-  `
+  await context.env.signal_os_db
+    .prepare(`
+      UPDATE applications
+      SET
+        company = ?,
+        role_title = ?,
+        status = ?,
+        next_action = ?,
+        recruiter = ?,
+        salary = ?,
+        job_link = ?,
+        location = ?,
+        jira_id = ?,
+        prep_page_url = ?,
+        stability_check = ?,
+        notes = ?,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `)
+    .bind(
+      body.company,
+      body.role_title,
+      body.status,
+      body.next_action || '',
+      body.recruiter || '',
+      body.salary || '',
+      body.job_link || '',
+      body.location || '',
+      body.jira_id || '',
+      body.prep_page_url || '',
+      body.stability_check || '',
+      body.notes || '',
+      body.id
+    )
+    .run()
+
+  return Response.json({ success: true })
 }
