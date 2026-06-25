@@ -24,6 +24,10 @@ import {
   openStoryPanel
 } from './components/StoryPanel.js'
 
+import {
+  Sidebar
+} from './components/Sidebar.js'
+
 let currentModule = 'career'
 let draggedCardId = null
 
@@ -175,31 +179,7 @@ function attachModuleHandlers() {
 async function renderApp() {
   document.querySelector('#app').innerHTML = `
     <main class="app-shell">
-      <aside class="sidebar">
-        <h1>Signal OS</h1>
-
-        <nav>
-          <button data-module="career" class="${currentModule === 'career' ? 'active' : ''}">
-            Applications
-          </button>
-
-          <button data-module="stories" class="${currentModule === 'stories' ? 'active' : ''}">
-            Stories
-          </button>
-
-          <button data-module="tasks" class="${currentModule === 'tasks' ? 'active' : ''}">
-            Task Hub
-          </button>
-
-          <button data-module="projects" class="${currentModule === 'projects' ? 'active' : ''}">
-            Project Hub
-          </button>
-
-          <button data-module="knowledge" class="${currentModule === 'knowledge' ? 'active' : ''}">
-            Knowledge Hub
-          </button>
-        </nav>
-      </aside>
+      ${Sidebar(currentModule)}
 
       <section class="main-panel">
         <div id="module-content">Loading...</div>
