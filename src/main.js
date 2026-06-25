@@ -6,6 +6,21 @@ import { Tasks } from './modules/tasks/Tasks.js'
 import { Projects } from './modules/projects/Projects.js'
 import { Knowledge } from './modules/knowledge/Knowledge.js'
 
+import {
+  getApplications,
+  updateApplication,
+  createApplication,
+  getLinkedStories,
+  saveLinkedStories
+} from './services/applicationService.js'
+
+import {
+  getStories,
+  getAllStories,
+  createStory,
+  updateStory
+} from './services/storyService.js'
+
 let currentModule = 'career'
 let draggedCardId = null
 
@@ -16,53 +31,6 @@ async function renderModule() {
   if (currentModule === 'projects') return Projects()
   if (currentModule === 'knowledge') return Knowledge()
   return await Applications()
-}
-
-async function getApplications() {
-  const response = await fetch('/api/applications')
-  return await response.json()
-}
-
-async function getStories() {
-  const response = await fetch('/api/stories')
-  return await response.json()
-}
-
-async function getAllStories() {
-  const response = await fetch('/api/all-stories')
-  return await response.json()
-}
-
-async function getLinkedStories(applicationId) {
-  const response = await fetch(`/api/application-stories?application_id=${applicationId}`)
-  return await response.json()
-}
-
-async function saveLinkedStories(applicationId, storyIds) {
-  await fetch('/api/application-stories', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      application_id: applicationId,
-      story_ids: storyIds
-    })
-  })
-}
-
-async function updateApplication(application) {
-  await fetch('/api/applications', {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(application)
-  })
-}
-
-async function updateStory(story) {
-  await fetch('/api/stories', {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(story)
-  })
 }
 
 async function updateApplicationStatus(id, status) {
@@ -100,9 +68,7 @@ async function openApplicationPanel(id) {
     <label>Status</label>
     <select id="panel-status">
       ${['Applied', 'Prep', 'Hiring Manager', 'Panel', 'Offer', 'Closed'].map(status => `
-        <option value="${status}" ${status === application.status ? 'selected' : ''}>
-          ${status}
-        </option>
+        <option value="${status}" ${status === application.status ? 'selected' : ''}>${status}</option>
       `).join('')}
     </select>
 
@@ -126,7 +92,6 @@ async function openApplicationPanel(id) {
 
     <section class="linked-stories-section">
       <h3>Linked Stories</h3>
-
       ${allStories.map(story => `
         <label class="story-checkbox">
           <input
@@ -135,10 +100,7 @@ async function openApplicationPanel(id) {
             value="${story.id}"
             ${linkedStoryIds.includes(String(story.id)) ? 'checked' : ''}
           />
-          <span>
-            ${story.title}
-            <small>${story.tags || ''}</small>
-          </span>
+          <span>${story.title}<small>${story.tags || ''}</small></span>
         </label>
       `).join('')}
     </section>
@@ -167,7 +129,6 @@ async function openApplicationPanel(id) {
     })
 
     await saveLinkedStories(application.id, selectedStoryIds)
-
     await renderApp()
   })
 }
@@ -182,7 +143,6 @@ async function openStoryPanel(id) {
 
   content.innerHTML = `
     <h2>${story.title}</h2>
-    <p>${story.tags || 'No tags'}</p>
 
     <label>Title</label>
     <input id="story-panel-title" value="${story.title || ''}" />
@@ -265,10 +225,10 @@ function attachModuleHandlers() {
         return
       }
 
-      await fetch('/api/applications', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ company, role_title: role, status: 'Applied' })
+      await createApplication({
+        company,
+        role_title: role,
+        status: 'Applied'
       })
 
       await renderApp()
@@ -290,12 +250,7 @@ function attachModuleHandlers() {
         return
       }
 
-      await fetch('/api/stories', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title })
-      })
-
+      await createStory({ title })
       await renderApp()
     })
   }
