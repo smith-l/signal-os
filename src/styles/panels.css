@@ -1,0 +1,84 @@
+.application-panel {
+  position: fixed;
+  right: 0;
+  top: 0;
+  width: 440px;
+  height: 100vh;
+  background: var(--surface);
+  border-left: 1px solid var(--line);
+  box-shadow: -10px 0 30px rgba(0,0,0,.1);
+  padding: 28px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.hidden {
+  display: none;
+}
+
+.panel-close {
+  float: right;
+  border: 0;
+  background: transparent;
+  font-size: 28px;
+  cursor: pointer;
+}
+
+.application-panel label {
+  display: block;
+  margin-top: 14px;
+  margin-bottom: 6px;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.application-panel input,
+.application-panel select,
+.application-panel textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+
+.application-panel textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.panel-save {
+  margin-top: 20px;
+  width: 100%;
+}
+
+.linked-stories-section {
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.story-checkbox {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+.story-checkbox input {
+  width: auto;
+  margin-top: 4px;
+}
+
+.story-checkbox span {
+  display: grid;
+  gap: 4px;
+}
+
+.story-checkbox small {
+  color: var(--muted);
+}

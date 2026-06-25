@@ -1,0 +1,60 @@
+.board {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(230px, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.column {
+  background: var(--surface-soft);
+  border-radius: var(--radius-lg);
+  padding: 14px;
+  min-height: 420px;
+}
+
+.column h3 {
+  margin: 4px 4px 14px;
+  font-size: 14px;
+}
+
+.card {
+  border-radius: var(--radius-md);
+  padding: 14px;
+  margin-bottom: 12px;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.card p {
+  margin: 0 0 12px;
+  color: #4b5563;
+}
+
+.card small {
+  color: var(--muted);
+}
+
+.status-select {
+  margin-top: 12px;
+  width: 100%;
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: white;
+}
+
+.draggable-card {
+  cursor: grab;
+}
+
+.draggable-card:active {
+  cursor: grabbing;
+}
+
+.dragging {
+  opacity: 0.5;
+}
+
+.drag-over {
+  outline: 2px dashed var(--accent);
+  outline-offset: -6px;
+}
