@@ -1,45 +1,60 @@
 .board {
   display: grid;
-  grid-template-columns: repeat(6, minmax(230px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(6, 292px);
+  gap: 18px;
   margin-top: 24px;
+  overflow-x: auto;
+  padding-bottom: 28px;
 }
 
 .column {
-  background: var(--surface-soft);
-  border-radius: var(--radius-lg);
-  padding: 14px;
-  min-height: 420px;
+  background: rgba(238,232,220,.78);
+  border: 1px solid rgba(221,215,202,.85);
+  border-radius: var(--radius-xl);
+  padding: 16px;
+  min-height: 460px;
+  max-height: calc(100vh - 330px);
+  overflow-y: auto;
 }
 
 .column h3 {
-  margin: 4px 4px 14px;
-  font-size: 14px;
+  margin: 6px 6px 16px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: #374151;
 }
 
 .card {
-  border-radius: var(--radius-md);
-  padding: 14px;
-  margin-bottom: 12px;
-  transition: transform .15s ease, box-shadow .15s ease;
+  border-radius: 20px;
+  padding: 18px;
+  margin-bottom: 14px;
+  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+}
+
+.card h4 {
+  font-size: 17px;
 }
 
 .card p {
-  margin: 0 0 12px;
+  margin: 0 0 14px;
   color: #4b5563;
+  line-height: 1.25;
 }
 
 .card small {
   color: var(--muted);
+  display: block;
+  line-height: 1.35;
 }
 
 .status-select {
-  margin-top: 12px;
+  margin-top: 14px;
   width: 100%;
-  padding: 8px;
-  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  border-radius: 14px;
   border: 1px solid var(--line);
-  background: white;
+  background: #fff;
 }
 
 .draggable-card {
@@ -51,32 +66,11 @@
 }
 
 .dragging {
-  opacity: 0.5;
+  opacity: 0.48;
 }
 
 .drag-over {
   outline: 2px dashed var(--accent);
-  outline-offset: -6px;
-}
-.board {
-  grid-template-columns: repeat(6, 280px);
-  overflow-x: auto;
-  padding-bottom: 24px;
-}
-
-.column {
-  max-height: calc(100vh - 320px);
-  overflow-y: auto;
-}
-
-.card {
-  padding: 18px;
-}
-
-.card h4 {
-  font-size: 16px;
-}
-
-.card p {
-  line-height: 1.25;
+  outline-offset: -8px;
+  background: rgba(255,255,255,.55);
 }
