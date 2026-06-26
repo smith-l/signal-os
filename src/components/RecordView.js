@@ -15,21 +15,24 @@ const STATUS_BADGE = {
   'Closed': 'status-closed'
 }
 
+async function loadMarked() {
+  if (window.marked) return
+  await new Promise((resolve, reject) => {
+    const s = document.createElement('script')
+    s.src = 'https://unpkg.com/marked@9.1.6/marked.min.js'
+    s.onload = resolve
+    s.onerror = reject
+    document.head.appendChild(s)
+  })
+}
+
 function renderMarkdown(text) {
   if (!text) return ''
-  return text
-    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    .replace(/`(.+?)`/g, '<code>$1</code>')
-    .replace(/^- (.+)$/gm, '<li>$1</li>')
-    .replace(/(<li>[^<]*<\/li>\n?)+/g, match => `<ul>${match}</ul>`)
-    .replace(/\n\n/g, '</p><p>')
-    .replace(/^([^<\n].+)$/gm, '<p>$1</p>')
-    .replace(/<p><\/p>/g, '')
-    .trim()
+  if (window.marked) {
+    return window.marked.parse(text, { breaks: true, gfm: true })
+  }
+  // Fallback while marked loads
+  return text.replace(/\n/g, '<br>')
 }
 
 function renderSection(section, appId) {
@@ -74,6 +77,7 @@ function renderSection(section, appId) {
 }
 
 export async function openRecordView(applicationId, allApplications, onBack) {
+  await loadMarked()
   const app = allApplications.find(a => String(a.id) === String(applicationId))
   if (!app) return
 
