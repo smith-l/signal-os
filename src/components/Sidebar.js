@@ -1,22 +1,23 @@
 const NAV_ITEMS = [
-  { id: 'career', label: 'Applications' },
-  { id: 'stories', label: 'Stories' },
-  { id: 'tasks', label: 'Task Hub' },
-  { id: 'projects', label: 'Project Hub' },
-  { id: 'knowledge', label: 'Knowledge Hub' }
+  { id: 'career', label: 'Applications', icon: 'ti-briefcase' },
+  { id: 'stories', label: 'Stories', icon: 'ti-book' },
+  { id: 'tasks', label: 'Task Hub', icon: 'ti-checkbox' },
+  { id: 'projects', label: 'Project Hub', icon: 'ti-layout-grid' },
+  { id: 'knowledge', label: 'Knowledge Hub', icon: 'ti-database' }
 ]
 
 export function Sidebar(currentModule) {
   return `
     <aside class="sidebar">
       <h1>Signal OS</h1>
-
+      <p class="version">Career Edition</p>
       <nav>
         ${NAV_ITEMS.map(item => `
           <button
             data-module="${item.id}"
             class="${currentModule === item.id ? 'active' : ''}"
           >
+            <i class="ti ${item.icon}" aria-hidden="true"></i>
             ${item.label}
           </button>
         `).join('')}

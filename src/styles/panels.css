@@ -2,14 +2,22 @@
   position: fixed;
   right: 0;
   top: 0;
-  width: 440px;
+  width: 420px;
   height: 100vh;
-  background: var(--surface);
-  border-left: 1px solid var(--line);
-  box-shadow: -10px 0 30px rgba(0,0,0,.1);
-  padding: 28px;
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--line-strong);
+  padding: 24px;
   overflow-y: auto;
   z-index: 1000;
+}
+
+.application-panel::-webkit-scrollbar {
+  width: 4px;
+}
+
+.application-panel::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 4px;
 }
 
 .hidden {
@@ -18,18 +26,42 @@
 
 .panel-close {
   float: right;
-  border: 0;
-  background: transparent;
-  font-size: 28px;
+  border: none;
+  background: var(--surface);
+  color: var(--ink-muted);
+  font-size: 20px;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s ease;
+}
+
+.panel-close:hover {
+  background: var(--surface-raised);
+  color: var(--ink);
+}
+
+.application-panel h2 {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin: 0 40px 4px 0;
+  color: var(--ink);
 }
 
 .application-panel label {
   display: block;
   margin-top: 14px;
-  margin-bottom: 6px;
-  font-weight: 700;
-  font-size: 13px;
+  margin-bottom: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-faint);
 }
 
 .application-panel input,
@@ -37,25 +69,46 @@
 .application-panel textarea {
   width: 100%;
   box-sizing: border-box;
-  padding: 10px;
-  border: 1px solid var(--line);
+  padding: 9px 12px;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.application-panel input:focus,
+.application-panel select:focus,
+.application-panel textarea:focus {
+  outline: none;
+  border-color: var(--accent);
 }
 
 .application-panel textarea {
-  min-height: 120px;
+  min-height: 100px;
   resize: vertical;
 }
 
 .panel-save {
   margin-top: 20px;
   width: 100%;
+  padding: 11px;
+  font-size: 13px;
 }
 
 .linked-stories-section {
-  margin-top: 24px;
-  padding-top: 18px;
+  margin-top: 20px;
+  padding-top: 16px;
   border-top: 1px solid var(--line);
+}
+
+.linked-stories-section h3 {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-faint);
+  margin: 0 0 10px;
 }
 
 .story-checkbox {
@@ -65,20 +118,30 @@
   padding: 10px;
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   cursor: pointer;
+  transition: border-color .14s ease, background .14s ease;
+}
+
+.story-checkbox:hover {
+  border-color: var(--line-strong);
+  background: var(--surface);
 }
 
 .story-checkbox input {
   width: auto;
-  margin-top: 4px;
+  margin-top: 2px;
+  flex-shrink: 0;
 }
 
 .story-checkbox span {
   display: grid;
-  gap: 4px;
+  gap: 3px;
+  font-size: 13px;
+  color: var(--ink);
 }
 
 .story-checkbox small {
-  color: var(--muted);
+  font-size: 11px;
+  color: var(--ink-faint);
 }
