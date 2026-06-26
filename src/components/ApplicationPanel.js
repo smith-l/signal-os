@@ -9,6 +9,8 @@ import {
   getAllStories
 } from '../services/storyService.js'
 
+import { openRecordView } from './RecordView.js'
+
 const STATUSES = [
   'Applied',
   'TA Screen',
@@ -48,6 +50,9 @@ export async function openApplicationPanel(applicationId, onSaved) {
     <h2>${application.company}</h2>
 
     <div class="panel-links">
+      <button class="panel-link prep-link open-record-btn" data-id="${application.id}">
+        Open Record ↗
+      </button>
     </div>
 
     <label>Company</label>
@@ -91,8 +96,6 @@ export async function openApplicationPanel(applicationId, onSaved) {
 
     <label>Job Link</label>
     <input id="panel-job-link" value="${application.job_link || ''}" />
-<label>Prep Page URL</label>
-    <input id="panel-prep-page-url" value="${application.prep_page_url || ''}" placeholder="https://leesmith286.atlassian.net/wiki/..." />
 
     <label>Next Action</label>
     <input id="panel-next-action" value="${application.next_action || ''}" />
@@ -140,6 +143,14 @@ export async function openApplicationPanel(applicationId, onSaved) {
   panel.classList.remove('hidden')
 
   document
+    .querySelector('.open-record-btn')
+    ?.addEventListener('click', async () => {
+      const allApps = await getApplications()
+      panel.classList.add('hidden')
+      await openRecordView(application.id, allApps, onSaved)
+    })
+
+  document
     .querySelector('#save-panel')
     .addEventListener('click', async () => {
 
@@ -175,8 +186,6 @@ export async function openApplicationPanel(applicationId, onSaved) {
 
         job_link:
           document.querySelector('#panel-job-link').value,
-        prep_page_url:
-          document.querySelector('#panel-prep-page-url').value,
 
         next_action:
           document.querySelector('#panel-next-action').value,
