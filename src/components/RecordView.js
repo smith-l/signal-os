@@ -245,24 +245,19 @@ Current content: ${currentContent}
 Respond with the updated section content in markdown only. No preamble or explanation.`
 
       try {
-        const res = await fetch('https://api.anthropic.com/v1/messages', {
+        const res = await fetch('/api/ai', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            model: 'claude-sonnet-4-6',
-            max_tokens: 1000,
+            prompt,
             system: systemPrompt,
-            messages: [{ role: 'user', content: prompt }]
+            section_id: sectionId,
+            application_id: appId,
+            write_to_db: true
           })
         })
         const data = await res.json()
-        const newContent = data.content?.[0]?.text || ''
-
-        await fetch('/api/role-prep', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: sectionId, content: newContent })
-        })
+        const newContent = data.text || ''
 
         if (section) section.content = newContent
 
