@@ -147,7 +147,14 @@ export async function openApplicationPanel(applicationId, onSaved) {
   `
 
   panel.classList.remove('hidden')
-
+document
+  .querySelector('.open-record-btn')
+  ?.addEventListener('click', async () => {
+    const { openRecordView } = await import('./RecordView.js')
+    const allApps = await getApplications()
+    panel.classList.add('hidden')
+    await openRecordView(application.id, allApps, onSaved)
+  })
   document
     .querySelector('#save-panel')
     .addEventListener('click', async () => {
