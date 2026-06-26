@@ -8,11 +8,11 @@ const STATUSES = [
   'Closed'
 ]
 
-const STABILITY_COLOURS = {
-  PASS: '#22c55e',
-  REVIEW: '#f59e0b',
-  CAUTION: '#ef4444',
-  UNKNOWN: '#94a3b8'
+const BADGE_CLASS = {
+  PASS: 'badge-pass',
+  REVIEW: 'badge-review',
+  CAUTION: 'badge-caution',
+  UNKNOWN: 'badge-unknown'
 }
 
 export function ApplicationBoard(applications) {
@@ -32,20 +32,16 @@ export function ApplicationBoard(applications) {
                 <div class="card-header">
                   <h4>${app.company}</h4>
                   ${app.stability_check ? `
-                    <span class="stability-badge" style="background:${STABILITY_COLOURS[app.stability_check] || '#94a3b8'}">
+                    <span class="stability-badge ${BADGE_CLASS[app.stability_check] || 'badge-unknown'}">
                       ${app.stability_check}
                     </span>
                   ` : ''}
                 </div>
-
                 <p class="card-role">${app.role_title}</p>
-
-                ${app.salary ? `<p class="card-salary">${app.salary}</p>` : ''}
-
+                ${app.salary && app.salary !== 'TBC' ? `<p class="card-salary">${app.salary}</p>` : ''}
                 ${app.next_action ? `<p class="card-next-action">${app.next_action}</p>` : ''}
-
                 <div class="card-links">
-                  ${app.prep_page_url ? `<a href="${app.prep_page_url}" target="_blank" onclick="event.stopPropagation()" class="card-link">Prep ↗</a>` : ''}
+                  <button class="card-link open-record-btn" data-id="${app.id}" onclick="event.stopPropagation()">Open Record</button>
                 </div>
               </article>
             `).join('')}
