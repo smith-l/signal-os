@@ -48,7 +48,6 @@ export async function openApplicationPanel(applicationId, onSaved) {
     <h2>${application.company}</h2>
 
     <div class="panel-links">
-      ${application.prep_page_url ? `<a href="${application.prep_page_url}" target="_blank" class="panel-link prep-link">Prep Page ↗</a>` : ''}
     </div>
 
     <label>Company</label>
