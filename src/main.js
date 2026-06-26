@@ -4,7 +4,7 @@ import { Applications } from './modules/career/Applications.js'
 import { Stories } from './modules/career/Stories.js'
 import { Tasks } from './modules/tasks/Tasks.js'
 import { Projects } from './modules/projects/Projects.js'
-import { Knowledge } from './modules/knowledge/Knowledge.js'
+import { KnowledgeHub, attachKnowledgeHandlers } from './modules/knowledge/KnowledgeHub.js'
 
 import {
   getApplications,
@@ -40,7 +40,7 @@ async function renderModule() {
   if (currentModule === 'stories') return await Stories()
   if (currentModule === 'tasks') return Tasks()
   if (currentModule === 'projects') return Projects()
-  if (currentModule === 'knowledge') return Knowledge()
+  if (currentModule === 'knowledge') return await KnowledgeHub()
   return await Applications()
 }
 
@@ -99,6 +99,13 @@ function attachModuleHandlers() {
       if (!title) { alert('Please enter a story title'); return }
       await createStory({ title })
       await renderApp()
+    })
+  }
+
+  // Knowledge Hub handlers
+  if (currentModule === 'knowledge') {
+    fetch('/api/knowledge-base').then(r => r.json()).then(sections => {
+      attachKnowledgeHandlers(sections)
     })
   }
 

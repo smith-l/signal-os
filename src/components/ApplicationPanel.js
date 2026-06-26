@@ -48,12 +48,8 @@ export async function openApplicationPanel(applicationId, onSaved) {
     <h2>${application.company}</h2>
 
     <div class="panel-links">
-      ${application.jira_id ? `<a href="https://leesmith286.atlassian.net/browse/${application.jira_id}" target="_blank" class="panel-link jira-link">Jira ${application.jira_id}</a>` : ''}
       ${application.prep_page_url ? `<a href="${application.prep_page_url}" target="_blank" class="panel-link prep-link">Prep Page ↗</a>` : ''}
-    <button class="ql-btn open-record-btn" data-id="${application.id}">
-  <i class="ti ti-layout-sidebar-right" aria-hidden="true"></i> Open Record
-</button>
-      </div>
+    </div>
 
     <label>Company</label>
     <input id="panel-company" value="${application.company || ''}" />
@@ -96,11 +92,7 @@ export async function openApplicationPanel(applicationId, onSaved) {
 
     <label>Job Link</label>
     <input id="panel-job-link" value="${application.job_link || ''}" />
-
-    <label>Jira ID</label>
-    <input id="panel-jira-id" value="${application.jira_id || ''}" placeholder="e.g. JS-1" />
-
-    <label>Prep Page URL</label>
+<label>Prep Page URL</label>
     <input id="panel-prep-page-url" value="${application.prep_page_url || ''}" placeholder="https://leesmith286.atlassian.net/wiki/..." />
 
     <label>Next Action</label>
@@ -147,14 +139,7 @@ export async function openApplicationPanel(applicationId, onSaved) {
   `
 
   panel.classList.remove('hidden')
-document
-  .querySelector('.open-record-btn')
-  ?.addEventListener('click', async () => {
-    const { openRecordView } = await import('./RecordView.js')
-    const allApps = await getApplications()
-    panel.classList.add('hidden')
-    await openRecordView(application.id, allApps, onSaved)
-  })
+
   document
     .querySelector('#save-panel')
     .addEventListener('click', async () => {
@@ -191,10 +176,6 @@ document
 
         job_link:
           document.querySelector('#panel-job-link').value,
-
-        jira_id:
-          document.querySelector('#panel-jira-id').value,
-
         prep_page_url:
           document.querySelector('#panel-prep-page-url').value,
 
