@@ -140,10 +140,8 @@ export async function openApplicationPanel(applicationId, onSaved) {
 
   panel.classList.remove('hidden')
 
-  const openRecordBtn = document.querySelector('.open-record-btn')
-  console.log('Open Record button found:', openRecordBtn)
-  openRecordBtn?.addEventListener('click', async () => {
-      console.log('Open Record clicked for:', application.id)
+  panel.querySelector('.open-record-btn')
+    ?.addEventListener('click', async () => {
       try {
         const { openRecordView } = await import('./RecordView.js')
         const allApps = await getApplications()
