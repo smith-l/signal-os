@@ -15,24 +15,11 @@ const STATUS_BADGE = {
   'Closed': 'status-closed'
 }
 
-async function loadMarked() {
-  if (window.marked) return
-  await new Promise((resolve, reject) => {
-    const s = document.createElement('script')
-    s.src = 'https://unpkg.com/marked@9.1.6/marked.min.js'
-    s.onload = resolve
-    s.onerror = reject
-    document.head.appendChild(s)
-  })
-}
+import { marked } from 'marked'
 
 function renderMarkdown(text) {
   if (!text) return ''
-  if (window.marked) {
-    return window.marked.parse(text, { breaks: true, gfm: true })
-  }
-  // Fallback while marked loads
-  return text.replace(/\n/g, '<br>')
+  return marked.parse(text, { breaks: true, gfm: true })
 }
 
 function renderSection(section, appId) {
@@ -77,7 +64,6 @@ function renderSection(section, appId) {
 }
 
 export async function openRecordView(applicationId, allApplications, onBack) {
-  await loadMarked()
   const app = allApplications.find(a => String(a.id) === String(applicationId))
   if (!app) return
 
