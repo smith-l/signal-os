@@ -255,7 +255,7 @@
 .markdown-body {
   font-size: 14px;
   line-height: 1.7;
-  color: var(--ink-muted);
+  color: #c8d0de;
 }
 
 .markdown-body h1,
@@ -308,11 +308,12 @@
 
 .markdown-body li {
   margin-bottom: 6px;
-  color: var(--ink-muted);
+  color: #c8d0de;
 }
 
 .markdown-body p {
   margin: 0 0 14px;
+  color: #c8d0de;
 }
 
 .markdown-body hr {
@@ -338,23 +339,30 @@
 }
 
 .markdown-body th {
-  background: var(--surface-raised);
-  color: var(--ink);
-  font-weight: 600;
+  background: rgba(99,102,241,.12);
+  color: #e2e8f0;
+  font-weight: 700;
   text-align: left;
   padding: 10px 14px;
-  border-bottom: 2px solid var(--line-strong);
+  border-bottom: 2px solid rgba(99,102,241,.3);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .markdown-body td {
   padding: 10px 14px;
-  border-bottom: 1px solid var(--line);
-  color: var(--ink-muted);
+  border-bottom: 1px solid var(--line-strong);
+  color: #c8d0de;
   vertical-align: top;
 }
 
 .markdown-body tr:last-child td {
   border-bottom: none;
+}
+
+.markdown-body tbody tr:nth-child(even) td {
+  background: rgba(255,255,255,.02);
 }
 
 .markdown-body a {
