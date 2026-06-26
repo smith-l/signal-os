@@ -9,8 +9,6 @@ import {
   getAllStories
 } from '../services/storyService.js'
 
-import { openRecordView } from './RecordView.js'
-
 const STATUSES = [
   'Applied',
   'TA Screen',
@@ -145,6 +143,7 @@ export async function openApplicationPanel(applicationId, onSaved) {
   document
     .querySelector('.open-record-btn')
     ?.addEventListener('click', async () => {
+      const { openRecordView } = await import('./RecordView.js')
       const allApps = await getApplications()
       panel.classList.add('hidden')
       await openRecordView(application.id, allApps, onSaved)
