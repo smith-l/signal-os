@@ -50,7 +50,10 @@ export async function openApplicationPanel(applicationId, onSaved) {
     <div class="panel-links">
       ${application.jira_id ? `<a href="https://leesmith286.atlassian.net/browse/${application.jira_id}" target="_blank" class="panel-link jira-link">Jira ${application.jira_id}</a>` : ''}
       ${application.prep_page_url ? `<a href="${application.prep_page_url}" target="_blank" class="panel-link prep-link">Prep Page ↗</a>` : ''}
-    </div>
+    <button class="ql-btn open-record-btn" data-id="${application.id}">
+  <i class="ti ti-layout-sidebar-right" aria-hidden="true"></i> Open Record
+</button>
+      </div>
 
     <label>Company</label>
     <input id="panel-company" value="${application.company || ''}" />

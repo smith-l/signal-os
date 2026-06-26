@@ -25,6 +25,10 @@ import {
 } from './components/StoryPanel.js'
 
 import {
+  openRecordView
+} from './components/RecordView.js'
+
+import {
   AppShell
 } from './components/AppShell.js'
 
@@ -37,18 +41,14 @@ async function renderModule() {
   if (currentModule === 'tasks') return Tasks()
   if (currentModule === 'projects') return Projects()
   if (currentModule === 'knowledge') return Knowledge()
-
   return await Applications()
 }
 
 async function updateApplicationStatus(id, status) {
   const applications = await getApplications()
   const application = applications.find(app => String(app.id) === String(id))
-
   if (!application) return
-
   application.status = status
-
   await updateApplication(application)
   await renderApp()
 }
@@ -58,16 +58,13 @@ function attachModuleHandlers() {
   const form = document.querySelector('#application-form')
   const saveButton = document.querySelector('#save-application')
   const closePanel = document.querySelector('#close-panel')
-
   const addStoryButton = document.querySelector('#add-story-btn')
   const storyForm = document.querySelector('#story-form')
   const saveStoryButton = document.querySelector('#save-story')
   const closeStoryPanel = document.querySelector('#close-story-panel')
 
   if (addButton && form) {
-    addButton.addEventListener('click', () => {
-      form.style.display = 'block'
-    })
+    addButton.addEventListener('click', () => { form.style.display = 'block' })
   }
 
   if (closePanel) {
@@ -86,39 +83,21 @@ function attachModuleHandlers() {
     saveButton.addEventListener('click', async () => {
       const company = document.querySelector('#company').value
       const role = document.querySelector('#role').value
-
-      if (!company || !role) {
-        alert('Please enter a company and role')
-        return
-      }
-
-      await createApplication({
-        company,
-        role_title: role,
-        status: 'Applied'
-      })
-
+      if (!company || !role) { alert('Please enter a company and role'); return }
+      await createApplication({ company, role_title: role, status: 'Applied' })
       await renderApp()
     })
   }
 
   if (addStoryButton && storyForm) {
-    addStoryButton.addEventListener('click', () => {
-      storyForm.style.display = 'block'
-    })
+    addStoryButton.addEventListener('click', () => { storyForm.style.display = 'block' })
   }
 
   if (saveStoryButton) {
     saveStoryButton.addEventListener('click', async () => {
       const title = document.querySelector('#story-title').value
-
-      if (!title) {
-        alert('Please enter a story title')
-        return
-      }
-
+      if (!title) { alert('Please enter a story title'); return }
       await createStory({ title })
-
       await renderApp()
     })
   }
@@ -129,17 +108,18 @@ function attachModuleHandlers() {
     })
   })
 
-  document.querySelectorAll('.status-select').forEach(select => {
-    select.addEventListener('change', async () => {
-      await updateApplicationStatus(select.dataset.id, select.value)
+  document.querySelectorAll('.application-card').forEach(card => {
+    card.addEventListener('click', async event => {
+      if (event.target.tagName === 'A') return
+      await openApplicationPanel(card.dataset.id, renderApp)
     })
   })
 
-  document.querySelectorAll('.application-card').forEach(card => {
-    card.addEventListener('click', async event => {
-      if (event.target.tagName === 'SELECT') return
-
-      await openApplicationPanel(card.dataset.id, renderApp)
+  document.querySelectorAll('.open-record-btn').forEach(btn => {
+    btn.addEventListener('click', async event => {
+      event.stopPropagation()
+      const applications = await getApplications()
+      await openRecordView(btn.dataset.id, applications, renderApp)
     })
   })
 
@@ -148,7 +128,6 @@ function attachModuleHandlers() {
       draggedCardId = card.dataset.id
       card.classList.add('dragging')
     })
-
     card.addEventListener('dragend', () => {
       card.classList.remove('dragging')
       draggedCardId = null
@@ -160,28 +139,19 @@ function attachModuleHandlers() {
       event.preventDefault()
       zone.classList.add('drag-over')
     })
-
-    zone.addEventListener('dragleave', () => {
-      zone.classList.remove('drag-over')
-    })
-
+    zone.addEventListener('dragleave', () => { zone.classList.remove('drag-over') })
     zone.addEventListener('drop', async event => {
       event.preventDefault()
       zone.classList.remove('drag-over')
-
       if (!draggedCardId) return
-
       await updateApplicationStatus(draggedCardId, zone.dataset.status)
     })
   })
 }
 
 async function renderApp() {
-  document.querySelector('#app').innerHTML =
-    AppShell(currentModule)
-
-  document.querySelector('#module-content').innerHTML =
-    await renderModule()
+  document.querySelector('#app').innerHTML = AppShell(currentModule)
+  document.querySelector('#module-content').innerHTML = await renderModule()
 
   document.querySelectorAll('[data-module]').forEach(button => {
     button.addEventListener('click', async () => {
