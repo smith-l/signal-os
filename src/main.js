@@ -1,7 +1,7 @@
 import './style.css'
 
 import { Applications } from './modules/career/Applications.js'
-import { Playbooks, attachPlaybookHandlers } from './modules/playbooks/Playbooks.js'
+import { Playbooks } from './modules/playbooks/Playbooks.js'
 import { Tasks } from './modules/tasks/Tasks.js'
 import { Projects } from './modules/projects/Projects.js'
 import { KnowledgeHub, attachKnowledgeHandlers } from './modules/knowledge/KnowledgeHub.js'
@@ -68,9 +68,24 @@ function attachModuleHandlers() {
     })
   }
 
-  // Playbook handlers
+  // Playbook handlers — event delegation
   if (currentModule === 'playbooks') {
-    attachPlaybookHandlers()
+    document.querySelector('#module-content')?.addEventListener('click', e => {
+      const card = e.target.closest('.playbook-card')
+      const backBtn = e.target.closest('#playbook-back')
+
+      if (card) {
+        import('./modules/playbooks/Playbooks.js').then(({ openPlaybook }) => {
+          openPlaybook(card.dataset.key)
+        })
+      }
+
+      if (backBtn) {
+        import('./modules/playbooks/Playbooks.js').then(({ closePlaybook }) => {
+          closePlaybook()
+        })
+      }
+    })
   }
 
   // Knowledge Hub handlers

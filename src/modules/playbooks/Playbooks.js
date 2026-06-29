@@ -29,14 +29,7 @@ const SECTIONS = [
   { title: 'SE Operating Model',             keys: ['kpis','capacity','hiring','channel','ninety','aiops'] },
 ]
 
-let currentPlaybook = null
-
-export async function Playbooks() {
-  currentPlaybook = null
-  return renderIndex()
-}
-
-function renderIndex() {
+function indexHTML() {
   return `
     <header class="page-header">
       <div class="page-header-left">
@@ -44,7 +37,6 @@ function renderIndex() {
         <h2>Playbooks</h2>
       </div>
     </header>
-
     <div id="playbook-content">
       ${SECTIONS.map(section => `
         <div class="playbook-section">
@@ -69,12 +61,17 @@ function renderIndex() {
   `
 }
 
-function renderDetail(key) {
-  const pb = PLAYBOOKS.find(p => p.key === key)
+function detailHTML(key) {
   const content = PLAYBOOK_CONTENT[key] || '<p>Content not found.</p>'
   return `
-    <div class="playbook-detail">
-      <button class="back-btn" id="playbook-back">
+    <header class="page-header">
+      <div class="page-header-left">
+        <p class="eyebrow">Playbooks</p>
+        <h2>${PLAYBOOKS.find(p => p.key === key)?.title || key}</h2>
+      </div>
+    </header>
+    <div id="playbook-content">
+      <button class="back-btn" id="playbook-back" style="margin-bottom:24px">
         <i class="ti ti-arrow-left" aria-hidden="true"></i> All Playbooks
       </button>
       <div class="playbook-detail-content">
@@ -84,39 +81,14 @@ function renderDetail(key) {
   `
 }
 
-export function attachPlaybookHandlers() {
-  document.querySelectorAll('.playbook-card').forEach(card => {
-    card.addEventListener('click', () => {
-      const key = card.dataset.key
-      currentPlaybook = key
-      document.querySelector('#playbook-content').innerHTML = renderDetail(key)
-      attachPlaybookDetailHandlers()
-    })
-  })
+export async function Playbooks() {
+  return indexHTML()
 }
 
-function attachPlaybookDetailHandlers() {
-  document.querySelector('#playbook-back')?.addEventListener('click', () => {
-    currentPlaybook = null
-    document.querySelector('#playbook-content').innerHTML = SECTIONS.map(section => `
-      <div class="playbook-section">
-        <h3 class="playbook-section-title">${section.title}</h3>
-        <div class="playbook-grid">
-          ${section.keys.map(key => {
-            const pb = PLAYBOOKS.find(p => p.key === key)
-            if (!pb) return ''
-            return `
-              <div class="playbook-card" data-key="${pb.key}">
-                <span class="badge">${pb.badge}</span>
-                <h4>${pb.title}</h4>
-                <p>${pb.desc}</p>
-                <span class="playbook-open">Open playbook →</span>
-              </div>
-            `
-          }).join('')}
-        </div>
-      </div>
-    `).join('')
-    attachPlaybookHandlers()
-  })
+export function openPlaybook(key) {
+  document.querySelector('#module-content').innerHTML = detailHTML(key)
+}
+
+export function closePlaybook() {
+  document.querySelector('#module-content').innerHTML = indexHTML()
 }
