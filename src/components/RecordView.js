@@ -24,7 +24,7 @@ function renderMarkdown(text) {
 
 function renderSection(section, appId) {
   return `
-    <div class="section-page" id="section-page-${section.id}">
+    <div class="section-page content-card" id="section-page-${section.id}">
       <div class="prep-section-header">
         <h2>${section.section_title}</h2>
         <button class="edit-section-btn" data-id="${section.id}">
