@@ -1,7 +1,7 @@
 import './style.css'
 
 import { Applications } from './modules/career/Applications.js'
-import { Playbooks } from './modules/playbooks/Playbooks.js'
+import { Playbooks, attachPlaybookHandlers } from './modules/playbooks/Playbooks.js'
 import { Tasks } from './modules/tasks/Tasks.js'
 import { Projects } from './modules/projects/Projects.js'
 import { KnowledgeHub, attachKnowledgeHandlers } from './modules/knowledge/KnowledgeHub.js'
@@ -66,6 +66,11 @@ function attachModuleHandlers() {
       await createApplication({ company, role_title: role, status: 'Applied' })
       await renderApp()
     })
+  }
+
+  // Playbook handlers
+  if (currentModule === 'playbooks') {
+    attachPlaybookHandlers()
   }
 
   // Knowledge Hub handlers
