@@ -1,6 +1,6 @@
 .summary-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(160px, 260px));
+  grid-template-columns: repeat(4, minmax(140px, 240px));
   gap: 12px;
   margin: 0 0 28px;
 }
@@ -8,28 +8,36 @@
 .summary-grid article {
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  padding: 18px 22px;
+  border-radius: var(--radius-xl);
+  padding: 22px;
+  transition: border-color .15s ease, transform .15s ease;
+  cursor: pointer;
+}
+
+.summary-grid article:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
 }
 
 .summary-grid span {
   display: block;
-  font-size: 28px;
-  font-weight: 700;
+  font-size: 34px;
+  font-weight: 800;
   letter-spacing: -0.04em;
   color: var(--ink);
   line-height: 1;
 }
 
 .summary-grid p {
-  margin: 5px 0 0;
+  margin: 6px 0 0;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   color: var(--ink-faint);
 }
 
+/* Story grid */
 .story-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -39,37 +47,40 @@
 .story-card {
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  padding: 20px;
+  border-radius: var(--radius-xl);
+  padding: 22px;
   cursor: pointer;
-  transition: border-color .15s ease, background .15s ease;
+  transition: border-color .15s ease, background .15s ease, transform .15s ease;
 }
 
 .story-card:hover {
   background: var(--surface-hover);
-  border-color: var(--line-strong);
+  border-color: var(--accent);
+  transform: translateY(-2px);
 }
 
 .story-card h3 {
   margin: 0 0 8px;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 700;
   color: var(--ink);
 }
 
+/* Application cards */
 .card {
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  padding: 14px 16px;
+  border-radius: var(--radius-xl);
+  padding: 16px 18px;
   margin-bottom: 10px;
   cursor: grab;
-  transition: border-color .15s ease, background .15s ease;
+  transition: border-color .15s ease, background .15s ease, transform .15s ease;
 }
 
 .card:hover {
   background: var(--surface-hover);
-  border-color: var(--line-strong);
+  border-color: var(--accent);
+  transform: translateY(-2px);
 }
 
 .card:active {
@@ -87,47 +98,46 @@
 .card-header h4 {
   margin: 0;
   font-size: 14px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-weight: 800;
+  letter-spacing: -0.01em;
   color: var(--ink);
   flex: 1;
   line-height: 1.3;
 }
 
-/* Stability badges — explicit classes instead of attribute selectors */
+/* Stability badges */
 .stability-badge {
   flex-shrink: 0;
   font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  padding: 3px 8px;
-  border-radius: 20px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  padding: 3px 9px;
+  border-radius: 999px;
   text-transform: uppercase;
-  margin-top: 1px;
 }
 
 .badge-pass {
-  background: rgba(34,197,94,.15);
-  color: #4ade80;
-  border: 1px solid rgba(34,197,94,.25);
+  background: var(--pass-bg);
+  color: var(--pass);
+  border: 1px solid rgba(130,199,127,.25);
 }
 
 .badge-review {
-  background: rgba(245,158,11,.15);
-  color: #fbbf24;
-  border: 1px solid rgba(245,158,11,.25);
+  background: var(--review-bg);
+  color: var(--review);
+  border: 1px solid rgba(225,193,95,.25);
 }
 
 .badge-caution {
-  background: rgba(239,68,68,.15);
-  color: #f87171;
-  border: 1px solid rgba(239,68,68,.25);
+  background: var(--caution-bg);
+  color: var(--caution);
+  border: 1px solid rgba(228,111,111,.25);
 }
 
 .badge-unknown {
-  background: rgba(100,116,139,.15);
-  color: #94a3b8;
-  border: 1px solid rgba(100,116,139,.25);
+  background: var(--unknown-bg);
+  color: var(--unknown);
+  border: 1px solid rgba(118,127,145,.25);
 }
 
 .card-role {
@@ -140,7 +150,7 @@
 .card-salary {
   margin: 0 0 6px;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--ink);
 }
 
@@ -150,8 +160,7 @@
   color: var(--ink-faint);
   line-height: 1.4;
   padding-left: 8px;
-  border-left: 2px solid var(--line-strong);
-  border-radius: 0;
+  border-left: 2px solid var(--accent);
 }
 
 .card-links {
@@ -164,19 +173,34 @@
 
 .card-link {
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 800;
   text-decoration: none;
   padding: 3px 10px;
-  border: 1px solid var(--line-strong);
-  border-radius: 20px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
   color: var(--ink-muted);
   background: var(--surface-raised);
   transition: color .14s ease, border-color .14s ease;
 }
 
 .card-link:hover {
-  color: var(--ink);
+  color: #15171c;
+  background: var(--accent);
   border-color: var(--accent);
+}
+
+/* Inline badges (general purpose) */
+.badge {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 3px 9px;
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 10px;
 }
 
 .panel-links {
@@ -187,25 +211,25 @@
 
 .panel-link {
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   text-decoration: none;
   padding: 4px 12px;
-  border-radius: 20px;
+  border-radius: 999px;
   transition: opacity .14s ease;
 }
 
 .panel-link:hover { opacity: 0.8; }
 
 .jira-link {
-  background: rgba(99,102,241,.15);
+  background: var(--accent-soft);
   color: var(--accent-text);
-  border: 1px solid rgba(99,102,241,.25);
+  border: 1px solid rgba(232,133,58,.25);
 }
 
 .prep-link {
-  background: rgba(34,197,94,.12);
-  color: #4ade80;
-  border: 1px solid rgba(34,197,94,.2);
+  background: var(--pass-bg);
+  color: var(--pass);
+  border: 1px solid rgba(130,199,127,.2);
 }
 
 .dragging { opacity: 0.4; }

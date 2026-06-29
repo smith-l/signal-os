@@ -10,32 +10,26 @@
   background: var(--bg-secondary);
   border: 1px solid var(--line);
   border-radius: var(--radius-xl);
-  padding: 12px;
+  padding: 14px;
   min-height: 400px;
   max-height: calc(100vh - 280px);
   overflow-y: auto;
 }
 
-.column::-webkit-scrollbar {
-  width: 4px;
-}
-
-.column::-webkit-scrollbar-track {
-  background: transparent;
-}
-
+.column::-webkit-scrollbar { width: 4px; }
+.column::-webkit-scrollbar-track { background: transparent; }
 .column::-webkit-scrollbar-thumb {
-  background: var(--line-strong);
+  background: var(--line);
   border-radius: 4px;
 }
 
 .column h3 {
   margin: 0 0 12px;
-  padding: 4px 6px;
+  padding: 4px 8px;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   color: var(--ink-faint);
   display: flex;
   align-items: center;
@@ -45,10 +39,10 @@
 .col-count {
   background: var(--surface);
   color: var(--ink-muted);
-  border-radius: 20px;
+  border-radius: 999px;
   padding: 1px 8px;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .drag-over {

@@ -4,11 +4,11 @@
 
 body {
   margin: 0;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+  font-family: 'Hanken Grotesk', system-ui, -apple-system, sans-serif;
   background: var(--bg);
   color: var(--ink);
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.55;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -17,6 +17,8 @@ body {
   grid-template-columns: 240px 1fr;
   min-height: 100vh;
 }
+
+/* ── Sidebar ───────────────────────────────────────────────────────────── */
 
 .sidebar {
   background: var(--sidebar-bg);
@@ -30,38 +32,41 @@ body {
 }
 
 .sidebar h1 {
-  margin: 0 0 8px 8px;
-  font-size: 16px;
-  font-weight: 700;
+  margin: 0 0 4px 4px;
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  font-weight: 600;
   letter-spacing: -0.02em;
-  color: var(--ink);
+  color: var(--accent);
 }
 
 .sidebar .version {
-  margin: 0 0 32px 8px;
+  margin: 0 0 28px 4px;
   font-size: 11px;
   color: var(--ink-faint);
-  font-weight: 500;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
 }
 
 .sidebar nav {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
+/* Nav items as outlined pills — old style */
 .sidebar button {
   background: transparent;
   color: var(--ink-muted);
-  border: none;
-  border-radius: var(--radius-md);
-  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 9px 14px;
   text-align: left;
   cursor: pointer;
-  font-weight: 500;
-  font-size: 14px;
+  font-weight: 800;
+  font-size: 13px;
+  font-family: 'Hanken Grotesk', system-ui, sans-serif;
   transition: all .15s ease;
   display: flex;
   align-items: center;
@@ -69,15 +74,19 @@ body {
 }
 
 .sidebar button:hover {
-  background: var(--surface);
-  color: var(--ink);
+  color: #15171c;
+  background: var(--accent);
+  border-color: var(--accent);
 }
 
 .sidebar button.active {
-  background: var(--accent-soft);
-  color: var(--accent-text);
-  font-weight: 600;
+  color: #15171c;
+  background: var(--accent);
+  border-color: var(--accent);
+  font-weight: 800;
 }
+
+/* ── Main panel ────────────────────────────────────────────────────────── */
 
 .main-panel {
   padding: 36px 40px;
@@ -95,22 +104,23 @@ body {
 .page-header-left {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
 .eyebrow {
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--ink-faint);
+  letter-spacing: 0.14em;
+  color: var(--accent);
   margin: 0;
 }
 
 .page-header h2 {
-  font-size: 28px;
-  font-weight: 700;
-  letter-spacing: -0.03em;
+  font-family: 'Fraunces', serif;
+  font-size: 34px;
+  font-weight: 500;
+  letter-spacing: -0.8px;
   margin: 0;
   color: var(--ink);
 }

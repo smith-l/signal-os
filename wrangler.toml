@@ -6,3 +6,7 @@ pages_build_output_dir = "dist"
 binding = "signal_os_db"
 database_name = "signal-os-db"
 database_id = "1f092911-57c1-451a-9db0-0451a462629b"
+
+[[kv_namespaces]]
+binding = "OAUTH_KV"
+id = "fc975b7ff30648ecbe1a4d13970ef725"
