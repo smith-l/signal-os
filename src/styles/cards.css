@@ -233,3 +233,64 @@
 }
 
 .dragging { opacity: 0.4; }
+
+/* ── Playbooks ────────────────────────────────────────────────────────────── */
+.playbook-section {
+  margin-bottom: 40px;
+}
+
+.playbook-section-title {
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ink-faint);
+  margin: 0 0 14px;
+}
+
+.playbook-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.playbook-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  padding: 20px;
+  cursor: pointer;
+  transition: border-color .15s ease, background .15s ease, transform .15s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.playbook-card:hover {
+  background: var(--surface-hover);
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.playbook-card h4 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+
+.playbook-card p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-muted);
+  line-height: 1.45;
+  flex: 1;
+}
+
+.playbook-open {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--accent);
+  margin-top: 4px;
+}

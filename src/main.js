@@ -1,7 +1,7 @@
 import './style.css'
 
 import { Applications } from './modules/career/Applications.js'
-import { Stories } from './modules/career/Stories.js'
+import { Playbooks } from './modules/playbooks/Playbooks.js'
 import { Tasks } from './modules/tasks/Tasks.js'
 import { Projects } from './modules/projects/Projects.js'
 import { KnowledgeHub, attachKnowledgeHandlers } from './modules/knowledge/KnowledgeHub.js'
@@ -11,18 +11,6 @@ import {
   updateApplication,
   createApplication
 } from './services/applicationService.js'
-
-import {
-  createStory
-} from './services/storyService.js'
-
-import {
-  openApplicationPanel
-} from './components/ApplicationPanel.js'
-
-import {
-  openStoryPanel
-} from './components/StoryPanel.js'
 
 import {
   openRecordView
@@ -37,7 +25,7 @@ let draggedCardId = null
 
 async function renderModule() {
   if (currentModule === 'career') return await Applications()
-  if (currentModule === 'stories') return await Stories()
+  if (currentModule === 'playbooks') return await Playbooks()
   if (currentModule === 'tasks') return Tasks()
   if (currentModule === 'projects') return Projects()
   if (currentModule === 'knowledge') return await KnowledgeHub()
@@ -55,27 +43,18 @@ async function updateApplicationStatus(id, status) {
 
 function attachModuleHandlers() {
   const addButton = document.querySelector('#add-application-btn')
-  const form = document.querySelector('#application-form')
   const saveButton = document.querySelector('#save-application')
   const closePanel = document.querySelector('#close-panel')
-  const addStoryButton = document.querySelector('#add-story-btn')
-  const storyForm = document.querySelector('#story-form')
-  const saveStoryButton = document.querySelector('#save-story')
-  const closeStoryPanel = document.querySelector('#close-story-panel')
 
-  if (addButton && form) {
-    addButton.addEventListener('click', () => { form.style.display = 'block' })
+  if (addButton) {
+    addButton.addEventListener('click', () => {
+      document.querySelector('#application-form').style.display = 'block'
+    })
   }
 
   if (closePanel) {
     closePanel.addEventListener('click', () => {
       document.querySelector('#application-panel').classList.add('hidden')
-    })
-  }
-
-  if (closeStoryPanel) {
-    closeStoryPanel.addEventListener('click', () => {
-      document.querySelector('#story-panel').classList.add('hidden')
     })
   }
 
@@ -89,19 +68,6 @@ function attachModuleHandlers() {
     })
   }
 
-  if (addStoryButton && storyForm) {
-    addStoryButton.addEventListener('click', () => { storyForm.style.display = 'block' })
-  }
-
-  if (saveStoryButton) {
-    saveStoryButton.addEventListener('click', async () => {
-      const title = document.querySelector('#story-title').value
-      if (!title) { alert('Please enter a story title'); return }
-      await createStory({ title })
-      await renderApp()
-    })
-  }
-
   // Knowledge Hub handlers
   if (currentModule === 'knowledge') {
     fetch('/api/knowledge-base').then(r => r.json()).then(sections => {
@@ -109,19 +75,13 @@ function attachModuleHandlers() {
     })
   }
 
-  document.querySelectorAll('.story-card').forEach(card => {
-    card.addEventListener('click', async () => {
-      await openStoryPanel(card.dataset.storyId, renderApp)
+  document.querySelectorAll('.application-card').forEach(card => {
+    card.addEventListener('click', async event => {
+      if (event.target.tagName === 'A') return
+      const applications = await getApplications()
+      await openRecordView(card.dataset.id, applications, renderApp)
     })
   })
-
-  document.querySelectorAll('.application-card').forEach(card => {
-  card.addEventListener('click', async event => {
-    if (event.target.tagName === 'A') return
-    const applications = await getApplications()
-    await openRecordView(card.dataset.id, applications, renderApp)
-  })
-})
 
   document.querySelectorAll('.open-record-btn').forEach(btn => {
     btn.addEventListener('click', async event => {
