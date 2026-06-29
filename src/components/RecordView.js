@@ -147,11 +147,11 @@ export async function openRecordView(applicationId, allApplications, onBack) {
           </div>
         </div>
 
-        <div class="record-quick-links">
-          ${app.jira_id ? `<a href="https://leesmith286.atlassian.net/browse/${app.jira_id}" class="ql-btn jira-link"><i class="ti ti-external-link" aria-hidden="true"></i> Jira ${app.jira_id}</a>` : ''}
-          ${app.prep_page_url ? `<a href="${app.prep_page_url}" class="ql-btn prep-link"><i class="ti ti-external-link" aria-hidden="true"></i> Confluence</a>` : ''}
-          ${app.job_link ? `<a href="${app.job_link}" class="ql-btn"><i class="ti ti-external-link" aria-hidden="true"></i> JD</a>` : ''}
-        </div>
+       ${app.job_link ? `
+<div class="record-quick-links">
+  <a href="${app.job_link}" class="ql-btn" target="_blank"><i class="ti ti-external-link" aria-hidden="true"></i> Job Description</a>
+</div>
+` : ''}
 
         <div id="section-content-area">
           ${firstSection ? renderSection(firstSection, applicationId) : '<p class="empty-section">No sections found.</p>'}

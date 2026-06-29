@@ -113,10 +113,10 @@ export class MyMCP extends McpAgent<Env> {
     this.server.registerTool(
       "get_prep_sections",
       {
-        description: "Get prep sections for a specific application. Returns section titles, keys, and content.",
+        description: "Get prep sections for a specific application. Returns section titles, keys, and content. Applications have default sections plus any custom sections created with create_prep_section.",
         inputSchema: {
           application_id: z.number().describe("The ID of the application"),
-          section_key: z.string().optional().describe("Optional: get a specific section only (overview, go_sheet, interview_process, people_intel, company_research, stories, notes)"),
+          section_key: z.string().optional().describe("Optional: get a specific section only. Omit to get all sections."),
         }
       },
       async ({ application_id, section_key }) => {
@@ -127,14 +127,70 @@ export class MyMCP extends McpAgent<Env> {
       }
     );
 
+    // ── RENAME PREP SECTION ───────────────────────────────────────────
+    this.server.registerTool(
+      "rename_prep_section",
+      {
+        description: "Rename the display title of a prep section. Does not change the section_key — only the title shown in the section nav.",
+        inputSchema: {
+          application_id: z.number().describe("The ID of the application"),
+          section_key: z.string().describe("The section key to rename"),
+          section_title: z.string().describe("The new display title for this section"),
+        }
+      },
+      async ({ application_id, section_key, section_title }) => {
+        const existing = await this.env.signal_os_db
+          .prepare("SELECT id FROM role_prep WHERE application_id = ? AND section_key = ?")
+          .bind(application_id, section_key)
+          .first() as any;
+        if (!existing) {
+          return { content: [{ type: "text", text: `No section found with key '${section_key}' for application ${application_id}.` }] };
+        }
+        await this.env.signal_os_db
+          .prepare("UPDATE role_prep SET section_title = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
+          .bind(section_title, existing.id)
+          .run();
+        return { content: [{ type: "text", text: `Renamed section '${section_key}' to '${section_title}' for application ${application_id}.` }] };
+      }
+    );
+
+    // ── CREATE PREP SECTION ───────────────────────────────────────────
+    this.server.registerTool(
+      "create_prep_section",
+      {
+        description: "Create a new named prep section for a job application. Use this to add sections beyond the default seven — e.g. a GO sheet per interview stage. section_key must be unique per application.",
+        inputSchema: {
+          application_id: z.number().describe("The ID of the application"),
+          section_key: z.string().describe("Unique key for this section, e.g. go_sheet_kira, go_sheet_emilie"),
+          section_title: z.string().describe("Display title shown in the section nav, e.g. 'GO Sheet — Kira (HM)'"),
+          content: z.string().optional().describe("Initial content in markdown format"),
+          sort_order: z.number().optional().describe("Position in the section nav. Lower numbers appear first."),
+        }
+      },
+      async ({ application_id, section_key, section_title, content, sort_order }) => {
+        const existing = await this.env.signal_os_db
+          .prepare("SELECT id FROM role_prep WHERE application_id = ? AND section_key = ?")
+          .bind(application_id, section_key)
+          .first() as any;
+        if (existing) {
+          return { content: [{ type: "text", text: `Section '${section_key}' already exists for application ${application_id} (ID ${existing.id}). Use update_prep_section to update its content.` }] };
+        }
+        const result = await this.env.signal_os_db
+          .prepare("INSERT INTO role_prep (application_id, section_key, section_title, content, sort_order) VALUES (?, ?, ?, ?, ?)")
+          .bind(application_id, section_key, section_title, content || "", sort_order || 99)
+          .run();
+        return { content: [{ type: "text", text: `Created section '${section_title}' (key: ${section_key}) for application ${application_id} (row ID ${result.meta.last_row_id}).` }] };
+      }
+    );
+
     // ── UPDATE PREP SECTION ───────────────────────────────────────────
     this.server.registerTool(
       "update_prep_section",
       {
-        description: "Write or update content in a prep section for a job application. Content should be in markdown format.",
+        description: "Write or update content in a prep section for a job application. Content should be in markdown format. Works on any section_key — both default sections (overview, go_sheet, interview_process, people_intel, company_research, stories, notes) and custom sections created with create_prep_section.",
         inputSchema: {
           application_id: z.number().describe("The ID of the application"),
-          section_key: z.string().describe("Section to update: overview, go_sheet, interview_process, people_intel, company_research, stories, or notes"),
+          section_key: z.string().describe("The section key to update. Use get_prep_sections to see all available keys for this application."),
           content: z.string().describe("The new content for this section in markdown format"),
         }
       },
