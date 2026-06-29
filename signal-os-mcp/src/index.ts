@@ -1,0 +1,243 @@
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpAgent } from "agents/mcp";
+import { OAuthProvider, type OAuthHelpers } from "@cloudflare/workers-oauth-provider";
+import { z } from "zod";
+
+interface Env {
+  signal_os_db: D1Database;
+  MCP_OBJECT: DurableObjectNamespace;
+  OAUTH_KV: KVNamespace;
+  MCP_SECRET: string;
+}
+
+export class MyMCP extends McpAgent<Env> {
+  server = new McpServer({
+    name: "Signal OS",
+    version: "1.0.0",
+  });
+
+  async init() {
+
+    // ── GET APPLICATIONS ─────────────────────────────────────────────
+    this.server.registerTool(
+      "get_applications",
+      {
+        description: "Get all job applications in the Signal OS pipeline. Returns company, role, status, stability, salary, next action, recruiter, and notes.",
+        inputSchema: {}
+      },
+      async () => {
+        const { results } = await this.env.signal_os_db
+          .prepare("SELECT * FROM applications ORDER BY created_at DESC")
+          .all();
+        return { content: [{ type: "text", text: JSON.stringify(results, null, 2) }] };
+      }
+    );
+
+    // ── UPDATE APPLICATION ────────────────────────────────────────────
+    this.server.registerTool(
+      "update_application",
+      {
+        description: "Update fields on a job application. Provide the application_id and any fields to update.",
+        inputSchema: {
+          application_id: z.number().describe("The ID of the application to update"),
+          status: z.string().optional().describe("New status: Applied, TA Screen, HM Interview, Peer, Panel, Offer, Closed"),
+          next_action: z.string().optional().describe("Next action to take"),
+          notes: z.string().optional().describe("Notes about the application"),
+          recruiter: z.string().optional().describe("Recruiter name"),
+          salary: z.string().optional().describe("Salary/package details"),
+          stability_check: z.string().optional().describe("Stability: PASS, REVIEW, CAUTION, or UNKNOWN"),
+          location: z.string().optional().describe("Job location"),
+          job_link: z.string().optional().describe("Link to the job posting"),
+        }
+      },
+      async ({ application_id, ...fields }) => {
+        const allowed = ["status", "next_action", "notes", "recruiter", "salary", "stability_check", "location", "job_link"];
+        const updates = Object.entries(fields).filter(([k, v]) => allowed.includes(k) && v !== undefined);
+        if (updates.length === 0) {
+          return { content: [{ type: "text", text: "No valid fields to update." }] };
+        }
+        const setClauses = updates.map(([k]) => `${k} = ?`).join(", ");
+        const values = updates.map(([, v]) => v);
+        await this.env.signal_os_db
+          .prepare(`UPDATE applications SET ${setClauses}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`)
+          .bind(...values, application_id)
+          .run();
+        const app = await this.env.signal_os_db
+          .prepare("SELECT company, role_title, status, next_action FROM applications WHERE id = ?")
+          .bind(application_id)
+          .first() as any;
+        return { content: [{ type: "text", text: `Updated ${app?.company} (ID ${application_id}). Status: ${app?.status}. Next action: ${app?.next_action}` }] };
+      }
+    );
+
+    // ── CREATE APPLICATION ────────────────────────────────────────────
+    this.server.registerTool(
+      "create_application",
+      {
+        description: "Create a new job application in the Signal OS pipeline. Also creates default prep sections.",
+        inputSchema: {
+          company: z.string().describe("Company name"),
+          role_title: z.string().describe("Job title/role"),
+          status: z.string().optional().describe("Initial status, defaults to Applied"),
+          recruiter: z.string().optional().describe("Recruiter name"),
+          salary: z.string().optional().describe("Salary/package details"),
+          stability_check: z.string().optional().describe("Stability: PASS, REVIEW, CAUTION, or UNKNOWN"),
+          next_action: z.string().optional().describe("First next action"),
+          notes: z.string().optional().describe("Initial notes"),
+          job_link: z.string().optional().describe("Link to the job posting"),
+        }
+      },
+      async ({ company, role_title, status, recruiter, salary, stability_check, next_action, notes, job_link }) => {
+        const result = await this.env.signal_os_db
+          .prepare(`INSERT INTO applications (company, role_title, status, recruiter, salary, stability_check, next_action, notes, job_link) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+          .bind(company, role_title, status || "Applied", recruiter || "", salary || "", stability_check || "UNKNOWN", next_action || "", notes || "", job_link || "")
+          .run();
+        const appId = result.meta.last_row_id;
+        const sections = [
+          ["overview", "Overview", 1], ["go_sheet", "GO Sheet", 2],
+          ["interview_process", "Interview Process", 3], ["people_intel", "People Intel", 4],
+          ["company_research", "Company Research", 5], ["stories", "Behavioural Stories", 6],
+          ["notes", "Notes & Activity", 7]
+        ];
+        for (const [key, title, order] of sections) {
+          await this.env.signal_os_db
+            .prepare("INSERT INTO role_prep (application_id, section_key, section_title, content, sort_order) VALUES (?, ?, ?, ?, ?)")
+            .bind(appId, key, title, "", order)
+            .run();
+        }
+        return { content: [{ type: "text", text: `Created application for ${company} — ${role_title} (ID ${appId}). Status: ${status || "Applied"}. 7 prep sections initialised.` }] };
+      }
+    );
+
+    // ── GET PREP SECTIONS ─────────────────────────────────────────────
+    this.server.registerTool(
+      "get_prep_sections",
+      {
+        description: "Get prep sections for a specific application. Returns section titles, keys, and content.",
+        inputSchema: {
+          application_id: z.number().describe("The ID of the application"),
+          section_key: z.string().optional().describe("Optional: get a specific section only (overview, go_sheet, interview_process, people_intel, company_research, stories, notes)"),
+        }
+      },
+      async ({ application_id, section_key }) => {
+        const { results } = section_key
+          ? await this.env.signal_os_db.prepare("SELECT id, section_key, section_title, content, updated_at FROM role_prep WHERE application_id = ? AND section_key = ?").bind(application_id, section_key).all()
+          : await this.env.signal_os_db.prepare("SELECT id, section_key, section_title, content, updated_at FROM role_prep WHERE application_id = ? ORDER BY sort_order").bind(application_id).all();
+        return { content: [{ type: "text", text: JSON.stringify(results, null, 2) }] };
+      }
+    );
+
+    // ── UPDATE PREP SECTION ───────────────────────────────────────────
+    this.server.registerTool(
+      "update_prep_section",
+      {
+        description: "Write or update content in a prep section for a job application. Content should be in markdown format.",
+        inputSchema: {
+          application_id: z.number().describe("The ID of the application"),
+          section_key: z.string().describe("Section to update: overview, go_sheet, interview_process, people_intel, company_research, stories, or notes"),
+          content: z.string().describe("The new content for this section in markdown format"),
+        }
+      },
+      async ({ application_id, section_key, content }) => {
+        const existing = await this.env.signal_os_db
+          .prepare("SELECT id FROM role_prep WHERE application_id = ? AND section_key = ?")
+          .bind(application_id, section_key)
+          .first() as any;
+        if (existing) {
+          await this.env.signal_os_db
+            .prepare("UPDATE role_prep SET content = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
+            .bind(content, existing.id)
+            .run();
+        } else {
+          await this.env.signal_os_db
+            .prepare("INSERT INTO role_prep (application_id, section_key, section_title, content, sort_order) VALUES (?, ?, ?, ?, 99)")
+            .bind(application_id, section_key, section_key, content)
+            .run();
+        }
+        return { content: [{ type: "text", text: `Updated ${section_key} section for application ${application_id}. ${content.length} characters written.` }] };
+      }
+    );
+
+    // ── GET KNOWLEDGE BASE ────────────────────────────────────────────
+    this.server.registerTool(
+      "get_knowledge_base",
+      {
+        description: "Get content from the Signal OS knowledge base. Contains: stories (all 12 behavioural stories), background, meddpicc, kpis, 90_days, se_model.",
+        inputSchema: {
+          section_key: z.string().optional().describe("Optional: specific section key. If omitted, returns all sections list."),
+        }
+      },
+      async ({ section_key }) => {
+        const { results } = section_key
+          ? await this.env.signal_os_db.prepare("SELECT * FROM knowledge_base WHERE section_key = ?").bind(section_key).all()
+          : await this.env.signal_os_db.prepare("SELECT id, section_key, section_title, sort_order FROM knowledge_base ORDER BY sort_order").all();
+        return { content: [{ type: "text", text: JSON.stringify(results, null, 2) }] };
+      }
+    );
+  }
+}
+
+// Auth gate: validates MCP_SECRET before completing OAuth
+const defaultHandler = {
+  async fetch(request: Request, env: Env & { OAUTH_PROVIDER: OAuthHelpers }) {
+    const url = new URL(request.url);
+
+    if (url.pathname !== "/authorize") {
+      return new Response("Not Found", { status: 404 });
+    }
+
+    const oauthReq = await env.OAUTH_PROVIDER.parseAuthRequest(request);
+
+    if (request.method === "GET") {
+      return new Response(
+        `<!doctype html><html><body style="font-family:sans-serif;max-width:400px;margin:80px auto;padding:0 20px">
+          <h2>Signal OS</h2>
+          <form method="POST" action="/authorize?${url.searchParams}">
+            <label>Secret<br><input name="token" type="password" style="width:100%;padding:8px;margin:8px 0" /></label><br>
+            <button type="submit" style="padding:8px 16px">Connect</button>
+          </form>
+        </body></html>`,
+        { headers: { "content-type": "text/html" } }
+      );
+    }
+
+    if (request.method === "POST") {
+      const form = await request.formData();
+      const token = String(form.get("token") ?? "");
+
+      if (!token || token !== env.MCP_SECRET) {
+        return new Response(
+          `<!doctype html><html><body style="font-family:sans-serif;max-width:400px;margin:80px auto;padding:0 20px">
+            <h2>Signal OS</h2>
+            <p style="color:red">Invalid secret.</p>
+            <form method="POST" action="/authorize?${url.searchParams}">
+              <label>Secret<br><input name="token" type="password" style="width:100%;padding:8px;margin:8px 0" /></label><br>
+              <button type="submit" style="padding:8px 16px">Connect</button>
+            </form>
+          </body></html>`,
+          { status: 401, headers: { "content-type": "text/html" } }
+        );
+      }
+
+      const { redirectTo } = await env.OAUTH_PROVIDER.completeAuthorization({
+        request: oauthReq,
+        userId: "owner",
+        scope: [],
+        props: {},
+        metadata: undefined,
+      });
+
+      return Response.redirect(redirectTo, 302);
+    }
+
+    return new Response("Method Not Allowed", { status: 405 });
+  },
+};
+
+export default new OAuthProvider({
+  authorizeEndpoint: "/authorize",
+  tokenEndpoint: "/token",
+  clientRegistrationEndpoint: "/register",
+  apiHandlers: { "/mcp": MyMCP.serve("/mcp") },
+  defaultHandler,
+});
