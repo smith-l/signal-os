@@ -292,7 +292,7 @@
 }
 
 .markdown-body h1 { font-size: 22px; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
-.markdown-body h2 { font-size: 18px; padding-top: 32px; border-top: 1px solid #2d3544; margin-top: 48px; }
+.markdown-body h2 { font-size: 18px; margin-top: 0; }
 .markdown-body h3 { font-size: 15px; font-weight: 700; }
 .markdown-body h4 { font-size: 14px; font-weight: 700; }
 

@@ -32,27 +32,50 @@ export async function KnowledgeHub() {
 }
 
 function renderKBSection(section) {
-  const html = section.content
-    ? marked.parse(section.content, { breaks: true, gfm: true })
-    : '<p class="empty-section">No content yet.</p>'
-
-  return `
-    <div class="content-card">
-      <div class="kb-section-header">
-        <h2>${section.section_title}</h2>
-        <button class="edit-section-btn" data-kb-id="${section.id}">
-          <i class="ti ti-edit" aria-hidden="true"></i> Edit
-        </button>
-      </div>
-      <div class="prep-content" id="kb-view-${section.id}">
-        <div class="markdown-body">${html}</div>
+  if (!section.content) {
+    return `
+      <div class="content-card">
+        <div class="kb-section-header">
+          <h2>${section.section_title}</h2>
+          <button class="edit-section-btn" data-kb-id="${section.id}">
+            <i class="ti ti-edit" aria-hidden="true"></i> Edit
+          </button>
+        </div>
+        <p class="empty-section">No content yet.</p>
       </div>
       <div class="prep-editor hidden" id="kb-edit-${section.id}">
-        <textarea class="section-textarea" id="kb-textarea-${section.id}">${section.content || ''}</textarea>
+        <textarea class="section-textarea" id="kb-textarea-${section.id}"></textarea>
         <div class="editor-actions">
           <button class="kb-save-btn btn-primary" data-kb-id="${section.id}">Save</button>
           <button class="kb-cancel-btn btn-ghost" data-kb-id="${section.id}">Cancel</button>
         </div>
+      </div>
+    `
+  }
+
+  // Split content at h2 boundaries so each story gets its own card
+  const chunks = section.content.split(/^(?=## )/m)
+
+  const cards = chunks.map((chunk, i) => {
+    const html = marked.parse(chunk.trim(), { breaks: true, gfm: true })
+    return `<div class="content-card"><div class="markdown-body">${html}</div></div>`
+  }).join('')
+
+  return `
+    <div class="kb-section-header">
+      <h2>${section.section_title}</h2>
+      <button class="edit-section-btn" data-kb-id="${section.id}">
+        <i class="ti ti-edit" aria-hidden="true"></i> Edit
+      </button>
+    </div>
+    <div class="prep-content" id="kb-view-${section.id}">
+      ${cards}
+    </div>
+    <div class="prep-editor hidden" id="kb-edit-${section.id}">
+      <textarea class="section-textarea" id="kb-textarea-${section.id}">${section.content || ''}</textarea>
+      <div class="editor-actions">
+        <button class="kb-save-btn btn-primary" data-kb-id="${section.id}">Save</button>
+        <button class="kb-cancel-btn btn-ghost" data-kb-id="${section.id}">Cancel</button>
       </div>
     </div>
   `
