@@ -46,7 +46,7 @@ function indexHTML() {
               const pb = PLAYBOOKS.find(p => p.key === key)
               if (!pb) return ''
               return `
-                <div class="playbook-card" onclick="window.__openPlaybook('${pb.key}')">
+                <div class="playbook-card" onclick="window.__openPlaybook(this.dataset.key)" data-key="${pb.key}">
                   <span class="badge">${pb.badge}</span>
                   <h4>${pb.title}</h4>
                   <p>${pb.desc}</p>
