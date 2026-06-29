@@ -71,26 +71,6 @@ function detailHTML(key) {
       </div>
     </header>
     <div id="playbook-content">
-      <button class="back-btn" id="playbook-back" style="margin-bottom:24px">
-        <i class="ti ti-arrow-left" aria-hidden="true"></i> All Playbooks
-      </button>
-      <div class="playbook-detail-content">
-        ${content}
-      </div>
-    </div>
-  `
-}
-
-function detailHTML(key) {
-  const content = PLAYBOOK_CONTENT[key] || '<p>Content not found.</p>'
-  return `
-    <header class="page-header">
-      <div class="page-header-left">
-        <p class="eyebrow">Playbooks</p>
-        <h2>${PLAYBOOKS.find(p => p.key === key)?.title || key}</h2>
-      </div>
-    </header>
-    <div id="playbook-content">
       <button class="back-btn" onclick="window.__closePlaybook()" style="margin-bottom:24px">
         <i class="ti ti-arrow-left" aria-hidden="true"></i> All Playbooks
       </button>
