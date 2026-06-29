@@ -68,26 +68,6 @@ function attachModuleHandlers() {
     })
   }
 
-  // Playbook handlers — event delegation
-  if (currentModule === 'playbooks') {
-    document.querySelector('#module-content')?.addEventListener('click', e => {
-      const card = e.target.closest('.playbook-card')
-      const backBtn = e.target.closest('#playbook-back')
-
-      if (card) {
-        import('./modules/playbooks/Playbooks.js').then(({ openPlaybook }) => {
-          openPlaybook(card.dataset.key)
-        })
-      }
-
-      if (backBtn) {
-        import('./modules/playbooks/Playbooks.js').then(({ closePlaybook }) => {
-          closePlaybook()
-        })
-      }
-    })
-  }
-
 console.log('module:', currentModule)
 console.log('module-content:', document.querySelector('#module-content')?.innerHTML?.substring(0, 100))
 console.log('playbook cards:', document.querySelectorAll('.playbook-card').length)
