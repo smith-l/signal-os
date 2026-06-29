@@ -46,7 +46,7 @@ function indexHTML() {
               const pb = PLAYBOOKS.find(p => p.key === key)
               if (!pb) return ''
               return `
-                <div class="playbook-card" data-key="${pb.key}">
+                <div class="playbook-card" onclick="window.__openPlaybook('${pb.key}')">
                   <span class="badge">${pb.badge}</span>
                   <h4>${pb.title}</h4>
                   <p>${pb.desc}</p>
@@ -81,6 +81,26 @@ function detailHTML(key) {
   `
 }
 
+function detailHTML(key) {
+  const content = PLAYBOOK_CONTENT[key] || '<p>Content not found.</p>'
+  return `
+    <header class="page-header">
+      <div class="page-header-left">
+        <p class="eyebrow">Playbooks</p>
+        <h2>${PLAYBOOKS.find(p => p.key === key)?.title || key}</h2>
+      </div>
+    </header>
+    <div id="playbook-content">
+      <button class="back-btn" onclick="window.__closePlaybook()" style="margin-bottom:24px">
+        <i class="ti ti-arrow-left" aria-hidden="true"></i> All Playbooks
+      </button>
+      <div class="playbook-detail-content">
+        ${content}
+      </div>
+    </div>
+  `
+}
+
 export async function Playbooks() {
   return indexHTML()
 }
@@ -92,3 +112,7 @@ export function openPlaybook(key) {
 export function closePlaybook() {
   document.querySelector('#module-content').innerHTML = indexHTML()
 }
+
+// Expose on window so inline onclick handlers can call them
+window.__openPlaybook = openPlaybook
+window.__closePlaybook = closePlaybook
