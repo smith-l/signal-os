@@ -92,7 +92,3 @@ export function openPlaybook(key) {
 export function closePlaybook() {
   document.querySelector('#module-content').innerHTML = indexHTML()
 }
-
-// Expose on window so inline onclick handlers can call them
-window.__openPlaybook = openPlaybook
-window.__closePlaybook = closePlaybook

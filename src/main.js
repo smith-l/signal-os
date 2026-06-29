@@ -2,6 +2,10 @@ import './style.css'
 
 import { Applications } from './modules/career/Applications.js'
 import { Playbooks, openPlaybook, closePlaybook } from './modules/playbooks/Playbooks.js'
+
+// Expose playbook functions globally for inline onclick handlers
+window.__openPlaybook = openPlaybook
+window.__closePlaybook = closePlaybook
 import { Tasks } from './modules/tasks/Tasks.js'
 import { Projects } from './modules/projects/Projects.js'
 import { KnowledgeHub, attachKnowledgeHandlers } from './modules/knowledge/KnowledgeHub.js'
