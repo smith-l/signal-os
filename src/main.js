@@ -87,6 +87,10 @@ function attachModuleHandlers() {
       }
     })
   }
+  
+console.log('module:', currentModule)
+console.log('module-content:', document.querySelector('#module-content')?.innerHTML?.substring(0, 100))
+console.log('playbook cards:', document.querySelectorAll('.playbook-card').length)
 
   // Knowledge Hub handlers
   if (currentModule === 'knowledge') {
