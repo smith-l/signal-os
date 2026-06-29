@@ -37,20 +37,22 @@ function renderKBSection(section) {
     : '<p class="empty-section">No content yet.</p>'
 
   return `
-    <div class="kb-section-header">
-      <h2>${section.section_title}</h2>
-      <button class="edit-section-btn" data-kb-id="${section.id}">
-        <i class="ti ti-edit" aria-hidden="true"></i> Edit
-      </button>
-    </div>
-    <div class="prep-content" id="kb-view-${section.id}">
-      <div class="markdown-body">${html}</div>
-    </div>
-    <div class="prep-editor hidden" id="kb-edit-${section.id}">
-      <textarea class="section-textarea" id="kb-textarea-${section.id}">${section.content || ''}</textarea>
-      <div class="editor-actions">
-        <button class="kb-save-btn btn-primary" data-kb-id="${section.id}">Save</button>
-        <button class="kb-cancel-btn btn-ghost" data-kb-id="${section.id}">Cancel</button>
+    <div class="content-card">
+      <div class="kb-section-header">
+        <h2>${section.section_title}</h2>
+        <button class="edit-section-btn" data-kb-id="${section.id}">
+          <i class="ti ti-edit" aria-hidden="true"></i> Edit
+        </button>
+      </div>
+      <div class="prep-content" id="kb-view-${section.id}">
+        <div class="markdown-body">${html}</div>
+      </div>
+      <div class="prep-editor hidden" id="kb-edit-${section.id}">
+        <textarea class="section-textarea" id="kb-textarea-${section.id}">${section.content || ''}</textarea>
+        <div class="editor-actions">
+          <button class="kb-save-btn btn-primary" data-kb-id="${section.id}">Save</button>
+          <button class="kb-cancel-btn btn-ghost" data-kb-id="${section.id}">Cancel</button>
+        </div>
       </div>
     </div>
   `
