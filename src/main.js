@@ -116,11 +116,12 @@ function attachModuleHandlers() {
   })
 
   document.querySelectorAll('.application-card').forEach(card => {
-    card.addEventListener('click', async event => {
-      if (event.target.tagName === 'A') return
-      await openApplicationPanel(card.dataset.id, renderApp)
-    })
+  card.addEventListener('click', async event => {
+    if (event.target.tagName === 'A') return
+    const applications = await getApplications()
+    await openRecordView(card.dataset.id, applications, renderApp)
   })
+})
 
   document.querySelectorAll('.open-record-btn').forEach(btn => {
     btn.addEventListener('click', async event => {
