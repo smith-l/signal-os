@@ -17,14 +17,38 @@ const STATUS_BADGE = {
 
 import { marked } from 'marked'
 
+function cleanContent(text) {
+  if (!text) return ''
+  // Strip code fences (```markdown ... ``` or ``` ... ```)
+  return text.replace(/^```[a-z]*\n?/i, '').replace(/\n?```\s*$/i, '').trim()
+}
+
 function renderMarkdown(text) {
   if (!text) return ''
-  return marked.parse(text, { breaks: true, gfm: true })
+  return marked.parse(cleanContent(text), { breaks: true, gfm: true })
+}
+
+function splitIntoCards(content) {
+  if (!content) return []
+  const cleaned = cleanContent(content)
+  // Split at ## headings — each h2 starts a new card
+  const chunks = cleaned.split(/^(?=## )/m).filter(c => c.trim())
+  return chunks
 }
 
 function renderSection(section, appId) {
+  const chunks = splitIntoCards(section.content)
+
+  const contentHtml = chunks.length > 0
+    ? chunks.map(chunk => `
+        <div class="content-card">
+          <div class="markdown-body">${marked.parse(chunk.trim(), { breaks: true, gfm: true })}</div>
+        </div>
+      `).join('')
+    : `<div class="content-card"><p class="empty-section">No content yet — click Edit to add, or use the AI bar below to generate it.</p></div>`
+
   return `
-    <div class="section-page content-card" id="section-page-${section.id}">
+    <div class="section-page" id="section-page-${section.id}">
       <div class="prep-section-header">
         <h2>${section.section_title}</h2>
         <button class="edit-section-btn" data-id="${section.id}">
@@ -33,14 +57,11 @@ function renderSection(section, appId) {
       </div>
 
       <div class="prep-content" id="content-view-${section.id}">
-        ${section.content
-          ? `<div class="markdown-body">${renderMarkdown(section.content)}</div>`
-          : `<p class="empty-section">No content yet — click Edit to add, or use the AI bar below to generate it.</p>`
-        }
+        ${contentHtml}
       </div>
 
       <div class="prep-editor hidden" id="content-edit-${section.id}">
-        <textarea class="section-textarea" id="textarea-${section.id}">${section.content || ''}</textarea>
+        <textarea class="section-textarea" id="textarea-${section.id}">${cleanContent(section.content || '')}</textarea>
         <div class="editor-actions">
           <button class="save-section-btn btn-primary" data-id="${section.id}">Save</button>
           <button class="cancel-section-btn btn-ghost" data-id="${section.id}">Cancel</button>
@@ -209,10 +230,16 @@ function attachSectionHandlers(applicationId, sections) {
       const section = sections.find(s => String(s.id) === id)
       if (section) section.content = content
 
-      document.querySelector(`#content-view-${id}`).innerHTML =
-        content
-          ? `<div class="markdown-body">${renderMarkdown(content)}</div>`
-          : `<p class="empty-section">No content yet — click Edit to add, or use the AI bar below to generate it.</p>`
+      const chunks = splitIntoCards(content)
+      const contentHtml = chunks.length > 0
+        ? chunks.map(chunk => `
+            <div class="content-card">
+              <div class="markdown-body">${marked.parse(chunk.trim(), { breaks: true, gfm: true })}</div>
+            </div>
+          `).join('')
+        : `<div class="content-card"><p class="empty-section">No content yet.</p></div>`
+
+      document.querySelector(`#content-view-${id}`).innerHTML = contentHtml
 
       document.querySelector(`#content-view-${id}`).classList.remove('hidden')
       document.querySelector(`#content-edit-${id}`).classList.add('hidden')
@@ -261,8 +288,16 @@ Respond with the updated section content in markdown only. No preamble or explan
 
         if (section) section.content = newContent
 
-        document.querySelector(`#content-view-${sectionId}`).innerHTML =
-          `<div class="markdown-body">${renderMarkdown(newContent)}</div>`
+        const chunks = splitIntoCards(newContent)
+        const contentHtml = chunks.length > 0
+          ? chunks.map(chunk => `
+              <div class="content-card">
+                <div class="markdown-body">${marked.parse(chunk.trim(), { breaks: true, gfm: true })}</div>
+              </div>
+            `).join('')
+          : `<div class="content-card"><p class="empty-section">No content yet.</p></div>`
+
+        document.querySelector(`#content-view-${sectionId}`).innerHTML = contentHtml
 
         if (document.querySelector(`#textarea-${sectionId}`)) {
           document.querySelector(`#textarea-${sectionId}`).value = newContent
