@@ -17,6 +17,105 @@ const STATUS_BADGE = {
 
 import { marked } from 'marked'
 
+// ── Story bank cache ──────────────────────────────────────────────────────────
+let storyBankCache = null
+
+async function getStoryBank() {
+  if (storyBankCache) return storyBankCache
+  try {
+    const res = await fetch('/api/knowledge-base?section_key=stories')
+    const data = await res.json()
+    const content = data?.[0]?.content || ''
+    const stories = content
+      .split(/^(?=## )/m)
+      .filter(s => s.trim())
+      .map(s => ({ raw: s.trim(), title: (s.match(/^## (.+)/m) || [])[1]?.trim() || '' }))
+    storyBankCache = stories
+    return stories
+  } catch(e) {
+    console.error('Story bank fetch error:', e)
+    return []
+  }
+}
+
+function findStory(stories, ref) {
+  if (!ref) return null
+  const r = ref.toLowerCase()
+  // Match by story number e.g. "Story 8" or "Story 11"
+  const numMatch = r.match(/story\s*(\d+)/)
+  if (numMatch) {
+    const num = numMatch[1]
+    const found = stories.find(s => s.title.toLowerCase().includes(`story ${num} `) || s.title.match(new RegExp(`^story ${num}\\b`, 'i')))
+    if (found) return found
+  }
+  // Fallback: partial title match
+  return stories.find(s => s.title.toLowerCase().includes(r.substring(0, 15))) || null
+}
+
+function attachStoryTableHandlers() {
+  document.querySelectorAll('.markdown-body table').forEach(table => {
+    const headers = Array.from(table.querySelectorAll('th')).map(th => th.textContent.trim().toLowerCase())
+    const storyColIndex = headers.findIndex(h => h.includes('story') || h.includes('best story'))
+    if (storyColIndex === -1) return
+
+    table.querySelectorAll('tbody tr').forEach(row => {
+      row.style.cursor = 'pointer'
+      row.title = 'Click to read story in full'
+
+      row.addEventListener('click', async () => {
+        // Toggle close if already open
+        const next = row.nextElementSibling
+        if (next?.classList.contains('story-expansion-row')) {
+          next.remove()
+          row.classList.remove('story-row-active')
+          return
+        }
+        // Close any other open expansions in this table
+        table.querySelectorAll('.story-expansion-row').forEach(r => r.remove())
+        table.querySelectorAll('tr.story-row-active').forEach(r => r.classList.remove('story-row-active'))
+
+        const storyRef = row.querySelectorAll('td')[storyColIndex]?.textContent?.trim()
+        if (!storyRef) return
+
+        const expansionRow = document.createElement('tr')
+        expansionRow.classList.add('story-expansion-row')
+        expansionRow.innerHTML = `<td colspan="99" class="story-expansion-cell">
+          <div class="story-expansion-loading"><i class="ti ti-loader-2 spin"></i> Loading...</div>
+        </td>`
+        row.insertAdjacentElement('afterend', expansionRow)
+        row.classList.add('story-row-active')
+
+        const stories = await getStoryBank()
+        const story = findStory(stories, storyRef)
+
+        if (!story) {
+          expansionRow.querySelector('td').innerHTML = `
+            <div class="story-expansion">
+              <span style="color:var(--ink-faint);font-style:italic">Story not found — reference: "${storyRef}"</span>
+            </div>`
+          return
+        }
+
+        expansionRow.querySelector('td').innerHTML = `
+          <div class="story-expansion">
+            <div class="story-expansion-header">
+              <span class="story-expansion-label">Story Bank</span>
+              <button class="story-expansion-close">✕ Close</button>
+            </div>
+            <div class="markdown-body story-expansion-body">${marked.parse(story.raw, { breaks: true, gfm: true })}</div>
+          </div>`
+
+        expansionRow.querySelector('.story-expansion-close').addEventListener('click', e => {
+          e.stopPropagation()
+          expansionRow.remove()
+          row.classList.remove('story-row-active')
+        })
+      })
+    })
+  })
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 function cleanContent(text) {
   if (!text) return ''
   // Strip code fences (```markdown ... ``` or ``` ... ```)
@@ -312,4 +411,7 @@ Respond with the updated section content in markdown only. No preamble or explan
       btn.disabled = false
     })
   })
+
+  // Story mapping table expansion
+  attachStoryTableHandlers()
 }
