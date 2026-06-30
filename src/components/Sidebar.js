@@ -1,7 +1,6 @@
 const NAV_ITEMS = [
   { id: 'career',    label: 'Applications', icon: 'ti-briefcase' },
   { id: 'playbooks', label: 'Playbooks',    icon: 'ti-layout-grid' },
-  { id: 'tasks',     label: 'Task Hub',     icon: 'ti-checkbox' },
   { id: 'knowledge', label: 'Knowledge Hub',icon: 'ti-database' },
 ]
 

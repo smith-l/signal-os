@@ -6,7 +6,6 @@ import { Playbooks, openPlaybook, closePlaybook } from './modules/playbooks/Play
 // Expose playbook functions globally for inline onclick handlers
 window.__openPlaybook = openPlaybook
 window.__closePlaybook = closePlaybook
-import { Tasks } from './modules/tasks/Tasks.js'
 import { Projects } from './modules/projects/Projects.js'
 import { KnowledgeHub, attachKnowledgeHandlers } from './modules/knowledge/KnowledgeHub.js'
 
@@ -30,7 +29,6 @@ let draggedCardId = null
 async function renderModule() {
   if (currentModule === 'career') return await Applications()
   if (currentModule === 'playbooks') return await Playbooks()
-  if (currentModule === 'tasks') return Tasks()
   if (currentModule === 'projects') return Projects()
   if (currentModule === 'knowledge') return await KnowledgeHub()
   return await Applications()
