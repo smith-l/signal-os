@@ -1,32 +1,23 @@
 import { marked } from 'marked'
 
-export async function KnowledgeHub() {
+export async function KnowledgeHub(activeKbId) {
   const res = await fetch('/api/knowledge-base')
   const sections = await res.json()
+
+  const activeSection = activeKbId
+    ? sections.find(s => String(s.id) === String(activeKbId))
+    : sections[0]
 
   return `
     <header class="page-header">
       <div class="page-header-left">
         <p class="eyebrow">Signal OS</p>
-        <h2>Knowledge Hub</h2>
+        <h2>${activeSection?.section_title || 'Knowledge Hub'}</h2>
       </div>
     </header>
 
-    <div class="knowledge-shell">
-      <nav class="knowledge-nav">
-        ${sections.map((s, i) => `
-          <button
-            class="section-nav-btn ${i === 0 ? 'active' : ''}"
-            data-kb-id="${s.id}"
-          >
-            ${s.section_title}
-          </button>
-        `).join('')}
-      </nav>
-
-      <div id="knowledge-content" class="knowledge-content">
-        ${sections[0] ? renderKBSection(sections[0]) : '<p class="empty-section">No content yet.</p>'}
-      </div>
+    <div id="knowledge-content" class="knowledge-content">
+      ${activeSection ? renderKBSection(activeSection) : '<p class="empty-section">No content yet.</p>'}
     </div>
   `
 }
@@ -53,10 +44,9 @@ function renderKBSection(section) {
     `
   }
 
-  // Split content at h2 boundaries so each story gets its own card
   const chunks = section.content.split(/^(?=## )/m)
 
-  const cards = chunks.map((chunk, i) => {
+  const cards = chunks.map(chunk => {
     const html = marked.parse(chunk.trim(), { breaks: true, gfm: true })
     return `<div class="content-card"><div class="markdown-body">${html}</div></div>`
   }).join('')
@@ -83,18 +73,6 @@ function renderKBSection(section) {
 
 export function attachKnowledgeHandlers(sections) {
   document.querySelectorAll('[data-kb-id]').forEach(btn => {
-    if (btn.classList.contains('section-nav-btn')) {
-      btn.addEventListener('click', () => {
-        const id = btn.dataset.kbId
-        const section = sections.find(s => String(s.id) === id)
-        if (!section) return
-        document.querySelectorAll('.section-nav-btn').forEach(b => b.classList.remove('active'))
-        btn.classList.add('active')
-        document.querySelector('#knowledge-content').innerHTML = renderKBSection(section)
-        attachKnowledgeHandlers(sections)
-      })
-    }
-
     if (btn.classList.contains('edit-section-btn')) {
       btn.addEventListener('click', () => {
         const id = btn.dataset.kbId
@@ -122,8 +100,14 @@ export function attachKnowledgeHandlers(sections) {
         })
         const section = sections.find(s => String(s.id) === id)
         if (section) section.content = content
-        document.querySelector(`#kb-view-${id}`).innerHTML =
-          `<div class="markdown-body">${marked.parse(content, { breaks: true, gfm: true })}</div>`
+
+        const chunks = content.split(/^(?=## )/m)
+        const cards = chunks.map(chunk => {
+          const html = marked.parse(chunk.trim(), { breaks: true, gfm: true })
+          return `<div class="content-card"><div class="markdown-body">${html}</div></div>`
+        }).join('')
+
+        document.querySelector(`#kb-view-${id}`).innerHTML = cards
         document.querySelector(`#kb-view-${id}`).classList.remove('hidden')
         document.querySelector(`#kb-edit-${id}`).classList.add('hidden')
       })

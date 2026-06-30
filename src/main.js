@@ -2,10 +2,6 @@ import './style.css'
 
 import { Applications } from './modules/career/Applications.js'
 import { Playbooks, openPlaybook, closePlaybook } from './modules/playbooks/Playbooks.js'
-
-// Expose playbook functions globally for inline onclick handlers
-window.__openPlaybook = openPlaybook
-window.__closePlaybook = closePlaybook
 import { Projects } from './modules/projects/Projects.js'
 import { KnowledgeHub, attachKnowledgeHandlers } from './modules/knowledge/KnowledgeHub.js'
 
@@ -23,14 +19,19 @@ import {
   AppShell
 } from './components/AppShell.js'
 
+// Expose playbook functions globally for inline onclick handlers
+window.__openPlaybook = openPlaybook
+window.__closePlaybook = closePlaybook
+
 let currentModule = 'career'
+let activeKbId = null
 let draggedCardId = null
 
 async function renderModule() {
   if (currentModule === 'career') return await Applications()
   if (currentModule === 'playbooks') return await Playbooks()
   if (currentModule === 'projects') return Projects()
-  if (currentModule === 'knowledge') return await KnowledgeHub()
+  if (currentModule === 'knowledge') return await KnowledgeHub(activeKbId)
   return await Applications()
 }
 
@@ -77,6 +78,14 @@ function attachModuleHandlers() {
     })
   }
 
+  // Sidebar nested KB nav — section click
+  document.querySelectorAll('[data-kb-nav-id]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      activeKbId = btn.dataset.kbNavId
+      await renderApp()
+    })
+  })
+
   document.querySelectorAll('.application-card').forEach(card => {
     card.addEventListener('click', async event => {
       if (event.target.tagName === 'A') return
@@ -120,12 +129,19 @@ function attachModuleHandlers() {
 }
 
 async function renderApp() {
-  document.querySelector('#app').innerHTML = AppShell(currentModule)
+  document.querySelector('#app').innerHTML = await AppShell(currentModule, activeKbId)
   document.querySelector('#module-content').innerHTML = await renderModule()
 
   document.querySelectorAll('[data-module]').forEach(button => {
     button.addEventListener('click', async () => {
-      currentModule = button.dataset.module
+      const clickedModule = button.dataset.module
+      // If clicking Knowledge Hub while already on it, just toggle — don't reset section
+      if (clickedModule === 'knowledge' && currentModule === 'knowledge') {
+        currentModule = 'career'
+      } else {
+        currentModule = clickedModule
+        if (clickedModule === 'knowledge') activeKbId = null
+      }
       await renderApp()
     })
   })
