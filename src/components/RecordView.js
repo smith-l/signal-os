@@ -23,9 +23,10 @@ let storyBankCache = null
 async function getStoryBank() {
   if (storyBankCache) return storyBankCache
   try {
-    const res = await fetch('/api/knowledge-base?section_key=stories')
+    const res = await fetch('/api/knowledge-base')
     const data = await res.json()
-    const content = data?.[0]?.content || ''
+    const storiesSection = data.find(s => s.section_key === 'stories')
+    const content = storiesSection?.content || ''
     const stories = content
       .split(/^(?=## )/m)
       .filter(s => s.trim())
@@ -209,6 +210,10 @@ export async function openRecordView(applicationId, allApplications, onBack) {
   const firstSection = sections[0]
 
   container.innerHTML = `
+    <button class="mobile-menu-toggle record-mobile-toggle" id="record-mobile-toggle" aria-label="Open menu">
+      <i class="ti ti-menu-2" aria-hidden="true"></i>
+    </button>
+    <div class="sidebar-backdrop" id="record-sidebar-backdrop"></div>
     <div class="record-shell">
 
       <aside class="record-sidebar">
@@ -271,6 +276,24 @@ function attachRecordHandlers(applicationId, allApplications, sections, onBack) 
     if (onBack) onBack()
   })
 
+  // Mobile record sidebar toggle
+  const recordToggle = document.querySelector('#record-mobile-toggle')
+  const recordBackdrop = document.querySelector('#record-sidebar-backdrop')
+  const recordSidebarEl = document.querySelector('.record-sidebar')
+
+  if (recordToggle && recordSidebarEl) {
+    recordToggle.addEventListener('click', () => {
+      recordSidebarEl.classList.toggle('open')
+      recordBackdrop?.classList.toggle('visible')
+    })
+  }
+  if (recordBackdrop) {
+    recordBackdrop.addEventListener('click', () => {
+      recordSidebarEl?.classList.remove('open')
+      recordBackdrop.classList.remove('visible')
+    })
+  }
+
   document.querySelectorAll('.role-nav-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
       const apps = await fetch('/api/applications').then(r => r.json())
@@ -291,6 +314,10 @@ function attachRecordHandlers(applicationId, allApplications, sections, onBack) 
         renderSection(section, applicationId)
 
       attachSectionHandlers(applicationId, sections)
+
+      // Close mobile sidebar after selecting a section
+      recordSidebarEl?.classList.remove('open')
+      recordBackdrop?.classList.remove('visible')
     })
   })
 

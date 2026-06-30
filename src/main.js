@@ -132,6 +132,31 @@ async function renderApp() {
   document.querySelector('#app').innerHTML = await AppShell(currentModule, activeKbId)
   document.querySelector('#module-content').innerHTML = await renderModule()
 
+  // Mobile sidebar toggle
+  const menuToggle = document.querySelector('#mobile-menu-toggle')
+  const backdrop = document.querySelector('#sidebar-backdrop')
+  const sidebarEl = document.querySelector('.sidebar')
+
+  if (menuToggle && sidebarEl) {
+    menuToggle.addEventListener('click', () => {
+      sidebarEl.classList.toggle('open')
+      backdrop?.classList.toggle('visible')
+    })
+  }
+  if (backdrop) {
+    backdrop.addEventListener('click', () => {
+      sidebarEl?.classList.remove('open')
+      backdrop.classList.remove('visible')
+    })
+  }
+  // Close mobile sidebar after selecting a module
+  document.querySelectorAll('[data-module], [data-kb-nav-id]').forEach(el => {
+    el.addEventListener('click', () => {
+      sidebarEl?.classList.remove('open')
+      backdrop?.classList.remove('visible')
+    })
+  })
+
   document.querySelectorAll('[data-module]').forEach(button => {
     button.addEventListener('click', async () => {
       const clickedModule = button.dataset.module
