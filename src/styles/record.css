@@ -21,7 +21,7 @@
 }
 
 .record-sidebar-top {
-  padding: 20px 16px 0;
+  padding: 32px 16px 0;
   flex-shrink: 0;
 }
 
@@ -151,7 +151,7 @@
 .record-main {
   overflow-y: auto;
   padding: 36px 52px;
-  padding-top: 44px;
+  padding-top: 56px;
 }
 
 .record-header {
