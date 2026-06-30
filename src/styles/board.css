@@ -50,3 +50,22 @@
   outline-offset: -6px;
   background: var(--accent-soft);
 }
+
+/* ── Catch-all "Other" column ────────────────────────────────────────────── */
+.column-other {
+  border-color: var(--caution);
+  border-style: dashed;
+}
+
+.column-other h3 {
+  color: var(--caution);
+}
+
+.other-column-note {
+  font-size: 11px;
+  color: var(--ink-faint);
+  font-style: italic;
+  margin: 0 0 12px;
+  padding: 0 4px;
+  line-height: 1.4;
+}
