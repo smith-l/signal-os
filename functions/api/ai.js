@@ -14,13 +14,20 @@ export async function onRequestPost(context) {
     body: JSON.stringify({
       model: 'claude-sonnet-4-6',
       max_tokens: 2000,
+      tools: [{ type: 'web_search_20250305', name: 'web_search' }],
       system: system || 'You are an expert interview prep and job search assistant for Lee Smith, a Senior Solutions Engineering leader based in London. Help prepare for SE leadership interviews at enterprise SaaS companies. Respond in markdown.',
       messages: [{ role: 'user', content: prompt }]
     })
   })
 
   const data = await anthropicRes.json()
-  const text = data.content?.[0]?.text || ''
+
+  // With web search enabled, the response may contain multiple content blocks.
+  // Extract all text blocks and concatenate.
+  const text = (data.content || [])
+    .filter(block => block.type === 'text')
+    .map(block => block.text)
+    .join('\n\n') || ''
 
   if (write_to_db && section_id) {
     await context.env.signal_os_db
