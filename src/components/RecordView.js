@@ -395,7 +395,7 @@ Status: ${app?.status}
 Section: ${section?.section_title}
 Current content: ${currentContent}
 
-Respond with the updated section content in markdown only. No preamble or explanation.`
+Respond with the COMPLETE updated section in markdown — preserve all existing content and add or update only what the user has asked for. Do not remove anything unless explicitly asked to. No preamble or explanation.`
 
       try {
         const res = await fetch('/api/ai', {
