@@ -86,6 +86,14 @@ function attachModuleHandlers() {
     })
   })
 
+  document.querySelectorAll('.card-delete-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!confirm(`Delete ${btn.dataset.company}? This removes all prep sections and cannot be undone.`)) return
+      await fetch(`/api/applications?id=${btn.dataset.id}`, { method: 'DELETE' })
+      await renderApp()
+    })
+  })
+
   document.querySelectorAll('.application-card').forEach(card => {
     card.addEventListener('click', async event => {
       if (event.target.tagName === 'A') return

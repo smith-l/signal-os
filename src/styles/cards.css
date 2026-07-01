@@ -189,6 +189,17 @@
   border-color: var(--accent);
 }
 
+.card-delete-btn {
+  margin-left: auto;
+  color: var(--ink-faint) !important;
+}
+
+.card-delete-btn:hover {
+  background: var(--caution-bg) !important;
+  border-color: var(--caution) !important;
+  color: var(--caution) !important;
+}
+
 /* Inline badges (general purpose) */
 .badge {
   display: inline-flex;

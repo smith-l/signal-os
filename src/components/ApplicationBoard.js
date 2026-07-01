@@ -35,6 +35,9 @@ function cardHTML(app) {
       ${app.next_action ? `<p class="card-next-action">${app.next_action}</p>` : ''}
       <div class="card-links">
         <button class="card-link open-record-btn" data-id="${app.id}" onclick="event.stopPropagation()">Open Record</button>
+        <button class="card-link card-delete-btn" data-id="${app.id}" data-company="${app.company}" onclick="event.stopPropagation()" title="Delete application">
+          <i class="ti ti-trash" aria-hidden="true"></i>
+        </button>
       </div>
     </article>
   `

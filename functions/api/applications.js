@@ -22,3 +22,22 @@ export async function onRequestPut(context) {
     .run()
   return Response.json({ success: true })
 }
+
+export async function onRequestDelete(context) {
+  const url = new URL(context.request.url)
+  const id = url.searchParams.get('id')
+  if (!id) return Response.json({ error: 'id required' }, { status: 400 })
+
+  // Cascade delete prep sections first
+  await context.env.signal_os_db
+    .prepare('DELETE FROM role_prep WHERE application_id = ?')
+    .bind(id)
+    .run()
+
+  await context.env.signal_os_db
+    .prepare('DELETE FROM applications WHERE id = ?')
+    .bind(id)
+    .run()
+
+  return Response.json({ success: true })
+}
