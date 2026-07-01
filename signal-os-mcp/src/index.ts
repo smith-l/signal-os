@@ -93,11 +93,15 @@ export class MyMCP extends McpAgent<Env> {
           .bind(company, role_title, status || "Applied", recruiter || "", salary || "", stability_check || "UNKNOWN", next_action || "", notes || "", job_link || "")
           .run();
         const appId = result.meta.last_row_id;
+        // Schema: overview(1) → notes(2) → interview_process(3) → people_intel(4) → company_research(5) → stories/values(6)
+        // No default go_sheet — these are created per interview stage via create_go_sheet
         const sections = [
-          ["overview", "Overview", 1], ["go_sheet", "GO Sheet", 2],
-          ["interview_process", "Interview Process", 3], ["people_intel", "People Intel", 4],
-          ["company_research", "Company Research", 5], ["stories", "Behavioural Stories", 6],
-          ["notes", "Notes & Activity", 7]
+          ["overview",          "Overview",          1],
+          ["notes",             "Notes & Activity",  2],
+          ["interview_process", "Interview Process", 3],
+          ["people_intel",      "People Intel",      4],
+          ["company_research",  "Company Research",  5],
+          ["stories",           "Values & Stories",  6],
         ];
         for (const [key, title, order] of sections) {
           await this.env.signal_os_db
@@ -105,7 +109,48 @@ export class MyMCP extends McpAgent<Env> {
             .bind(appId, key, title, "", order)
             .run();
         }
-        return { content: [{ type: "text", text: `Created application for ${company} — ${role_title} (ID ${appId}). Status: ${status || "Applied"}. 7 prep sections initialised.` }] };
+        return { content: [{ type: "text", text: `Created application for ${company} — ${role_title} (ID ${appId}). Status: ${status || "Applied"}. 6 prep sections initialised (use create_go_sheet to add GO Sheets per interview stage).` }] };
+      }
+    );
+
+    // ── CREATE GO SHEET ───────────────────────────────────────────────
+    this.server.registerTool(
+      "create_go_sheet",
+      {
+        description: "Create a GO Sheet prep section for a specific interview stage. Automatically names and orders the section. Use this whenever a new interview stage is confirmed — HM call, peer interview, panel, values interview etc. The section key will be go_sheet_{stage_key} and will appear after existing GO Sheets in the section nav.",
+        inputSchema: {
+          application_id: z.number().describe("The ID of the application"),
+          stage_name: z.string().describe("The interview stage name, e.g. 'Kira (HM)', 'Emilie (Peer)', 'Panel', 'Values'"),
+          stage_key: z.string().describe("Short slug for the section key, e.g. 'kira_hm', 'emilie_peer', 'panel', 'values'. Will become go_sheet_{stage_key}"),
+          content: z.string().optional().describe("Initial content in markdown format. Can be empty and filled later."),
+        }
+      },
+      async ({ application_id, stage_name, stage_key, content }) => {
+        const section_key = `go_sheet_${stage_key}`
+        const section_title = `GO Sheet — ${stage_name}`
+
+        // Check it doesn't already exist
+        const existing = await this.env.signal_os_db
+          .prepare("SELECT id FROM role_prep WHERE application_id = ? AND section_key = ?")
+          .bind(application_id, section_key)
+          .first() as any;
+        if (existing) {
+          return { content: [{ type: "text", text: `GO Sheet for '${stage_name}' already exists (key: ${section_key}, ID: ${existing.id}). Use update_prep_section to update its content.` }] };
+        }
+
+        // Find the highest current sort_order for this application and place after it
+        const maxOrder = await this.env.signal_os_db
+          .prepare("SELECT MAX(sort_order) as max_order FROM role_prep WHERE application_id = ?")
+          .bind(application_id)
+          .first() as any;
+        const sort_order = (maxOrder?.max_order || 6) + 1;
+
+        await this.env.signal_os_db
+          .prepare("INSERT INTO role_prep (application_id, section_key, section_title, content, sort_order) VALUES (?, ?, ?, ?, ?)")
+          .bind(application_id, section_key, section_title, content || "", sort_order)
+          .run();
+
+        return { content: [{ type: "text", text: `Created GO Sheet '${section_title}' (key: ${section_key}) for application ${application_id} at position ${sort_order}.` }] };
       }
     );
 
