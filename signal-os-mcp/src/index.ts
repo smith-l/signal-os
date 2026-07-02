@@ -62,6 +62,26 @@ export class MyMCP extends McpAgent<Env> {
           .prepare(`UPDATE applications SET ${setClauses}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`)
           .bind(...values, application_id)
           .run();
+
+        // If notes were updated, sync to role_prep notes section
+        const notesUpdate = updates.find(([k]) => k === "notes");
+        if (notesUpdate) {
+          const notesContent = notesUpdate[1] as string;
+          const existingNotes = await this.env.signal_os_db
+            .prepare("SELECT id, content FROM role_prep WHERE application_id = ? AND section_key = 'notes'")
+            .bind(application_id)
+            .first() as any;
+          if (existingNotes) {
+            // Prepend new note to existing content with timestamp
+            const timestamp = new Date().toISOString().split('T')[0];
+            const updatedContent = `## Update — ${timestamp}\n${notesContent}\n\n---\n\n${existingNotes.content || ''}`;
+            await this.env.signal_os_db
+              .prepare("UPDATE role_prep SET content = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
+              .bind(updatedContent, existingNotes.id)
+              .run();
+          }
+        }
+
         const app = await this.env.signal_os_db
           .prepare("SELECT company, role_title, status, next_action FROM applications WHERE id = ?")
           .bind(application_id)
