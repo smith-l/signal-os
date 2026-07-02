@@ -144,3 +144,131 @@
   font-size: 11px;
   color: var(--ink-faint);
 }
+
+/* ── Application edit panel ───────────────────────────────────────────────── */
+.app-edit-panel {
+  position: fixed;
+  right: 0;
+  top: 0;
+  width: 420px;
+  height: 100vh;
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--line);
+  z-index: 1200;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -4px 0 24px rgba(0,0,0,.4);
+}
+
+.app-edit-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 24px 16px;
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+
+.app-edit-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.app-edit-close {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  color: var(--ink-muted);
+  font-size: 16px;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .14s ease;
+  font-family: 'Hanken Grotesk', system-ui, sans-serif;
+}
+
+.app-edit-close:hover {
+  background: var(--accent);
+  color: #15171c;
+  border-color: var(--accent);
+}
+
+.app-edit-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.app-edit-body::-webkit-scrollbar { width: 4px; }
+.app-edit-body::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+
+.app-edit-body label {
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-faint);
+  margin-top: 12px;
+  margin-bottom: 4px;
+}
+
+.app-edit-body input,
+.app-edit-body select,
+.app-edit-body textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 9px 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+  font-size: 13px;
+  font-family: 'Hanken Grotesk', system-ui, sans-serif;
+}
+
+.app-edit-body input:focus,
+.app-edit-body select:focus,
+.app-edit-body textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.app-edit-body textarea { resize: vertical; }
+
+.app-edit-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.app-edit-footer .btn-primary,
+.app-edit-footer .btn-ghost {
+  flex: 1;
+}
+
+/* Header recruiter/applied date lines */
+.record-recruiter,
+.record-applied {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--ink-faint);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+@media (max-width: 900px) {
+  .app-edit-panel {
+    width: 100%;
+  }
+}

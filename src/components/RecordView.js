@@ -15,6 +15,9 @@ const STATUS_BADGE = {
   'Closed': 'status-closed'
 }
 
+const STATUSES = ['Applied', 'TA Screen', 'HM Interview', 'Peer', 'Panel', 'Offer', 'Closed']
+const STABILITY_OPTIONS = ['PASS', 'REVIEW', 'CAUTION', 'UNKNOWN']
+
 import { marked } from 'marked'
 
 // ── Story bank cache ──────────────────────────────────────────────────────────
@@ -42,14 +45,12 @@ async function getStoryBank() {
 function findStory(stories, ref) {
   if (!ref) return null
   const r = ref.toLowerCase()
-  // Match by story number e.g. "Story 8" or "Story 11"
   const numMatch = r.match(/story\s*(\d+)/)
   if (numMatch) {
     const num = numMatch[1]
     const found = stories.find(s => s.title.toLowerCase().includes(`story ${num} `) || s.title.match(new RegExp(`^story ${num}\\b`, 'i')))
     if (found) return found
   }
-  // Fallback: partial title match
   return stories.find(s => s.title.toLowerCase().includes(r.substring(0, 15))) || null
 }
 
@@ -64,14 +65,12 @@ function attachStoryTableHandlers() {
       row.title = 'Click to read story in full'
 
       row.addEventListener('click', async () => {
-        // Toggle close if already open
         const next = row.nextElementSibling
         if (next?.classList.contains('story-expansion-row')) {
           next.remove()
           row.classList.remove('story-row-active')
           return
         }
-        // Close any other open expansions in this table
         table.querySelectorAll('.story-expansion-row').forEach(r => r.remove())
         table.querySelectorAll('tr.story-row-active').forEach(r => r.classList.remove('story-row-active'))
 
@@ -115,11 +114,9 @@ function attachStoryTableHandlers() {
     })
   })
 }
-// ─────────────────────────────────────────────────────────────────────────────
 
 function cleanContent(text) {
   if (!text) return ''
-  // Strip code fences (```markdown ... ``` or ``` ... ```)
   return text.replace(/^```[a-z]*\n?/i, '').replace(/\n?```\s*$/i, '').trim()
 }
 
@@ -131,7 +128,6 @@ function renderMarkdown(text) {
 function splitIntoCards(content) {
   if (!content) return []
   const cleaned = cleanContent(content)
-  // Split at ## headings — each h2 starts a new card
   const chunks = cleaned.split(/^(?=## )/m).filter(c => c.trim())
   return chunks
 }
@@ -178,6 +174,78 @@ function renderSection(section, appId) {
         />
         <button class="ai-submit-btn" data-section-id="${section.id}" data-app-id="${appId}">
           <i class="ti ti-sparkles" aria-hidden="true"></i>
+        </button>
+      </div>
+    </div>
+  `
+}
+
+function renderEditPanel(app) {
+  return `
+    <div class="app-edit-panel hidden" id="app-edit-panel">
+      <div class="app-edit-header">
+        <h3>Edit Application</h3>
+        <button class="app-edit-close" id="app-edit-close">✕</button>
+      </div>
+      <div class="app-edit-body">
+        <label>Company</label>
+        <input id="edit-company" type="text" value="${app.company || ''}" />
+
+        <label>Role Title</label>
+        <input id="edit-role" type="text" value="${app.role_title || ''}" />
+
+        <label>Status</label>
+        <select id="edit-status">
+          ${STATUSES.map(s => `<option value="${s}" ${app.status === s ? 'selected' : ''}>${s}</option>`).join('')}
+        </select>
+
+        <label>Recruiter</label>
+        <input id="edit-recruiter" type="text" value="${app.recruiter || ''}" />
+
+        <label>Salary / Package</label>
+        <input id="edit-salary" type="text" value="${app.salary || ''}" />
+
+        <label>Stability</label>
+        <select id="edit-stability">
+          ${STABILITY_OPTIONS.map(s => `<option value="${s}" ${app.stability_check === s ? 'selected' : ''}>${s}</option>`).join('')}
+        </select>
+
+        <label>Next Action</label>
+        <textarea id="edit-next-action" rows="2">${app.next_action || ''}</textarea>
+
+        <label>Job Link</label>
+        <input id="edit-job-link" type="text" value="${app.job_link || ''}" />
+
+        <label>Applied Date</label>
+        <input id="edit-applied-date" type="text" placeholder="e.g. 8 June 2026" value="${app.applied_date || ''}" />
+
+        <label>Notes</label>
+        <textarea id="edit-notes" rows="4">${app.notes || ''}</textarea>
+      </div>
+      <div class="app-edit-footer">
+        <button class="btn-primary" id="app-edit-save">Save</button>
+        <button class="btn-ghost" id="app-edit-cancel">Cancel</button>
+      </div>
+    </div>
+    <div class="sidebar-backdrop" id="app-edit-backdrop"></div>
+  `
+}
+
+function renderRecordHeader(app) {
+  return `
+    <div class="record-header" id="record-header">
+      <div>
+        <p class="eyebrow">${app.status}</p>
+        <h1 class="record-title">${app.company}</h1>
+        <p class="record-role">${app.role_title}</p>
+        ${app.recruiter ? `<p class="record-recruiter"><i class="ti ti-user" aria-hidden="true"></i> ${app.recruiter}</p>` : ''}
+        ${app.applied_date ? `<p class="record-applied"><i class="ti ti-calendar" aria-hidden="true"></i> Applied ${app.applied_date}</p>` : ''}
+      </div>
+      <div class="record-meta">
+        ${app.stability_check ? `<span class="stability-badge ${STABILITY_BADGE[app.stability_check] || 'badge-unknown'}">${app.stability_check}</span>` : ''}
+        ${app.salary ? `<span class="record-salary">${app.salary}</span>` : ''}
+        <button class="edit-app-btn ql-btn" id="edit-app-btn">
+          <i class="ti ti-edit" aria-hidden="true"></i> Edit
         </button>
       </div>
     </div>
@@ -239,23 +307,14 @@ export async function openRecordView(applicationId, allApplications, onBack) {
       </aside>
 
       <main class="record-main">
-        <div class="record-header">
-          <div>
-            <p class="eyebrow">${app.status}</p>
-            <h1 class="record-title">${app.company}</h1>
-            <p class="record-role">${app.role_title}</p>
-          </div>
-          <div class="record-meta">
-            ${app.stability_check ? `<span class="stability-badge ${STABILITY_BADGE[app.stability_check] || 'badge-unknown'}">${app.stability_check}</span>` : ''}
-            ${app.salary ? `<span class="record-salary">${app.salary}</span>` : ''}
-          </div>
-        </div>
+        ${renderRecordHeader(app)}
+        ${renderEditPanel(app)}
 
-       ${app.job_link ? `
-<div class="record-quick-links">
-  <a href="${app.job_link}" class="ql-btn" target="_blank"><i class="ti ti-external-link" aria-hidden="true"></i> Job Description</a>
-</div>
-` : ''}
+        ${app.job_link ? `
+          <div class="record-quick-links">
+            <a href="${app.job_link}" class="ql-btn" target="_blank"><i class="ti ti-external-link" aria-hidden="true"></i> Job Description</a>
+          </div>
+        ` : ''}
 
         <div id="section-content-area">
           ${firstSection ? renderSection(firstSection, applicationId) : '<p class="empty-section">No sections found.</p>'}
@@ -266,6 +325,59 @@ export async function openRecordView(applicationId, allApplications, onBack) {
   `
 
   attachRecordHandlers(applicationId, allApplications, sections, onBack)
+}
+
+function attachEditPanelHandlers(applicationId, allApplications, onBack) {
+  const panel = document.querySelector('#app-edit-panel')
+  const backdrop = document.querySelector('#app-edit-backdrop')
+
+  const openPanel = () => {
+    panel.classList.remove('hidden')
+    backdrop.classList.add('visible')
+  }
+
+  const closePanel = () => {
+    panel.classList.add('hidden')
+    backdrop.classList.remove('visible')
+  }
+
+  document.querySelector('#edit-app-btn')?.addEventListener('click', openPanel)
+  document.querySelector('#app-edit-close')?.addEventListener('click', closePanel)
+  document.querySelector('#app-edit-cancel')?.addEventListener('click', closePanel)
+  backdrop?.addEventListener('click', closePanel)
+
+  document.querySelector('#app-edit-save')?.addEventListener('click', async () => {
+    const updates = {
+      id: Number(applicationId),
+      company:        document.querySelector('#edit-company').value,
+      role_title:     document.querySelector('#edit-role').value,
+      status:         document.querySelector('#edit-status').value,
+      recruiter:      document.querySelector('#edit-recruiter').value,
+      salary:         document.querySelector('#edit-salary').value,
+      stability_check:document.querySelector('#edit-stability').value,
+      next_action:    document.querySelector('#edit-next-action').value,
+      job_link:       document.querySelector('#edit-job-link').value,
+      applied_date:   document.querySelector('#edit-applied-date').value,
+      notes:          document.querySelector('#edit-notes').value,
+    }
+
+    await fetch('/api/applications', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates)
+    })
+
+    closePanel()
+
+    // Re-render header with updated values
+    const apps = await fetch('/api/applications').then(r => r.json())
+    const updatedApp = apps.find(a => String(a.id) === String(applicationId))
+    if (updatedApp) {
+      document.querySelector('#record-header').outerHTML = renderRecordHeader(updatedApp)
+      // Re-attach edit button
+      attachEditPanelHandlers(applicationId, allApplications, onBack)
+    }
+  })
 }
 
 function attachRecordHandlers(applicationId, allApplications, sections, onBack) {
@@ -315,12 +427,12 @@ function attachRecordHandlers(applicationId, allApplications, sections, onBack) 
 
       attachSectionHandlers(applicationId, sections)
 
-      // Close mobile sidebar after selecting a section
       recordSidebarEl?.classList.remove('open')
       recordBackdrop?.classList.remove('visible')
     })
   })
 
+  attachEditPanelHandlers(applicationId, allApplications, onBack)
   attachSectionHandlers(applicationId, sections)
 }
 
@@ -366,7 +478,6 @@ function attachSectionHandlers(applicationId, sections) {
         : `<div class="content-card"><p class="empty-section">No content yet.</p></div>`
 
       document.querySelector(`#content-view-${id}`).innerHTML = contentHtml
-
       document.querySelector(`#content-view-${id}`).classList.remove('hidden')
       document.querySelector(`#content-edit-${id}`).classList.add('hidden')
     })
@@ -439,6 +550,5 @@ Respond with the COMPLETE updated section in markdown — preserve all existing 
     })
   })
 
-  // Story mapping table expansion
   attachStoryTableHandlers()
 }
