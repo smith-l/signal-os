@@ -272,3 +272,7 @@
     width: 100%;
   }
 }
+
+.app-edit-panel.hidden {
+  display: none !important;
+}
