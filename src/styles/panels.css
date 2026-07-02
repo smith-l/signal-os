@@ -276,3 +276,11 @@
 .app-edit-panel.hidden {
   display: none !important;
 }
+.app-edit-body textarea#edit-notes {
+  min-height: 150px;
+  resize: vertical;
+}
+.app-edit-body textarea#edit-next-action {
+  min-height: 80px;
+  resize: vertical;
+}
