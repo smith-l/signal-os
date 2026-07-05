@@ -219,12 +219,85 @@ function renderRecordHeader(record, config) {
   `
 }
 
+function renderTaskPanel(tasks, recordId) {
+  const statuses = ['Backlog', 'Active', 'Blocked', 'Done']
+  const rows = tasks.map(t => `
+    <div class="task-row ${t.status === 'Done' ? 'task-done' : ''}" data-task-id="${t.id}">
+      <span class="task-title">${t.title}</span>
+      <select class="task-status-select" data-task-id="${t.id}">
+        ${statuses.map(s => `<option value="${s}" ${t.status === s ? 'selected' : ''}>${s}</option>`).join('')}
+      </select>
+      <button class="task-delete-btn" data-task-id="${t.id}" title="Delete">
+        <i class="ti ti-trash" aria-hidden="true"></i>
+      </button>
+    </div>
+  `).join('')
+
+  return `
+    <div class="task-panel" id="task-panel">
+      <div class="task-panel-header">
+        <h3>Tasks</h3>
+      </div>
+      <div class="task-list" id="task-list">
+        ${rows || '<p class="empty-section">No tasks yet — add one below.</p>'}
+      </div>
+      <div class="task-add-row">
+        <input type="text" id="new-task-title" placeholder="Add a task..." data-record-id="${recordId}" />
+        <button id="add-task-btn" data-record-id="${recordId}">+ Add</button>
+      </div>
+    </div>
+  `
+}
+
+function attachTaskHandlers(recordId) {
+  const reload = async () => {
+    const tasks = await fetch(`/api/tasks?project_id=${recordId}`).then(r => r.json())
+    document.querySelector('#task-panel').outerHTML = renderTaskPanel(tasks, recordId)
+    attachTaskHandlers(recordId)
+  }
+
+  document.querySelector('#add-task-btn')?.addEventListener('click', async () => {
+    const input = document.querySelector('#new-task-title')
+    const title = input.value.trim()
+    if (!title) return
+    await fetch('/api/tasks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, project_id: Number(recordId), module: 'project' })
+    })
+    await reload()
+  })
+
+  document.querySelectorAll('.task-status-select').forEach(select => {
+    select.addEventListener('change', async () => {
+      const taskId = select.dataset.taskId
+      await fetch('/api/tasks', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: taskId, status: select.value })
+      })
+      await reload()
+    })
+  })
+
+  document.querySelectorAll('.task-delete-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      await fetch(`/api/tasks?id=${btn.dataset.taskId}`, { method: 'DELETE' })
+      await reload()
+    })
+  })
+}
+
 export async function openRecordView(recordId, allRecords, onBack, config) {
   const record = allRecords.find(r => String(r.id) === String(recordId))
   if (!record) return
 
   const sections = await fetch(`${config.prepApiBase}?${config.prepIdParam}=${recordId}`)
     .then(r => r.json())
+
+  const tasks = config.enableTasks
+    ? await fetch(`/api/tasks?project_id=${recordId}`).then(r => r.json())
+    : []
 
   const container = document.querySelector('#record-view')
   container.classList.remove('hidden')
@@ -289,12 +362,15 @@ export async function openRecordView(recordId, allRecords, onBack, config) {
         <div id="section-content-area">
           ${firstSection ? renderSection(firstSection, recordId) : '<p class="empty-section">No sections found.</p>'}
         </div>
+
+        ${config.enableTasks ? renderTaskPanel(tasks, recordId) : ''}
       </main>
 
     </div>
   `
 
   attachRecordHandlers(recordId, allRecords, sections, onBack, config)
+  if (config.enableTasks) attachTaskHandlers(recordId)
 }
 
 function attachEditPanelHandlers(recordId, allRecords, onBack, config) {

@@ -674,3 +674,90 @@ tr.story-row-active td {
   margin: 0;
   color: var(--ink);
 }
+/* Task checklist panel */
+.task-panel {
+  margin-top: 32px;
+  border-top: 1px solid var(--line);
+  padding-top: 24px;
+}
+
+.task-panel-header h3 {
+  font-size: 15px;
+  margin: 0 0 12px;
+}
+
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.task-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+}
+
+.task-row.task-done .task-title {
+  color: var(--ink-faint);
+  text-decoration: line-through;
+}
+
+.task-title {
+  flex: 1;
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.task-status-select {
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--bg);
+  color: var(--ink-muted);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 3px 8px;
+}
+
+.task-delete-btn {
+  background: transparent;
+  border: none;
+  color: var(--ink-faint);
+  cursor: pointer;
+  padding: 2px;
+}
+
+.task-delete-btn:hover {
+  color: var(--caution);
+}
+
+.task-add-row {
+  display: flex;
+  gap: 8px;
+}
+
+.task-add-row input {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  color: var(--ink);
+  font-size: 13px;
+}
+
+#add-task-btn {
+  background: var(--accent);
+  color: #15171c;
+  border: none;
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-weight: 900;
+  font-size: 13px;
+  cursor: pointer;
+}

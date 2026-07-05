@@ -122,6 +122,7 @@ export const projectConfig = {
   quickLinks: [],
 
   enableStoryBank: false,
+  enableTasks: true,
 
   defaultSections: [
     { section_key: 'problem_statement', section_title: 'Problem Statement / Objective', sort_order: 1 },
