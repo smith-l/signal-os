@@ -171,6 +171,12 @@ function renderEditField(record, field) {
       <textarea id="edit-${field.key}" rows="4">${value}</textarea>
     `
   }
+  if (field.type === 'date') {
+    return `
+      <label>${field.label}</label>
+      <input id="edit-${field.key}" type="date" value="${value}" />
+    `
+  }
   return `
     <label>${field.label}</label>
     <input id="edit-${field.key}" type="text" value="${value}" />
@@ -221,9 +227,18 @@ function renderRecordHeader(record, config) {
 
 function renderTaskPanel(tasks, recordId) {
   const statuses = ['Backlog', 'Active', 'Blocked', 'Done']
-  const rows = tasks.map(t => `
-    <div class="task-row ${t.status === 'Done' ? 'task-done' : ''}" data-task-id="${t.id}">
+  const sorted = [...tasks].sort((a, b) => {
+    if (!a.due_date && !b.due_date) return 0
+    if (!a.due_date) return 1
+    if (!b.due_date) return -1
+    return a.due_date.localeCompare(b.due_date)
+  })
+
+  const rows = sorted.map(t => `
+    <div class="task-row ${t.status === 'Done' ? 'task-done' : ''} ${t.is_milestone ? 'task-milestone' : ''}" data-task-id="${t.id}">
+      ${t.is_milestone ? '<i class="ti ti-flag-filled task-milestone-icon" aria-hidden="true" title="Milestone"></i>' : ''}
       <span class="task-title">${t.title}</span>
+      <input type="date" class="task-due-input" data-task-id="${t.id}" value="${t.due_date || ''}" />
       <select class="task-status-select" data-task-id="${t.id}">
         ${statuses.map(s => `<option value="${s}" ${t.status === s ? 'selected' : ''}>${s}</option>`).join('')}
       </select>
@@ -243,6 +258,10 @@ function renderTaskPanel(tasks, recordId) {
       </div>
       <div class="task-add-row">
         <input type="text" id="new-task-title" placeholder="Add a task..." data-record-id="${recordId}" />
+        <input type="date" id="new-task-due" title="Due date (optional)" />
+        <label class="task-milestone-label">
+          <input type="checkbox" id="new-task-milestone" /> Milestone
+        </label>
         <button id="add-task-btn" data-record-id="${recordId}">+ Add</button>
       </div>
     </div>
@@ -258,12 +277,20 @@ function attachTaskHandlers(recordId) {
 
   document.querySelector('#add-task-btn')?.addEventListener('click', async () => {
     const input = document.querySelector('#new-task-title')
+    const dueInput = document.querySelector('#new-task-due')
+    const milestoneInput = document.querySelector('#new-task-milestone')
     const title = input.value.trim()
     if (!title) return
     await fetch('/api/tasks', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, project_id: Number(recordId), module: 'project' })
+      body: JSON.stringify({
+        title,
+        project_id: Number(recordId),
+        module: 'project',
+        due_date: dueInput.value || null,
+        is_milestone: milestoneInput.checked
+      })
     })
     await reload()
   })
@@ -275,6 +302,18 @@ function attachTaskHandlers(recordId) {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: taskId, status: select.value })
+      })
+      await reload()
+    })
+  })
+
+  document.querySelectorAll('.task-due-input').forEach(input => {
+    input.addEventListener('change', async () => {
+      const taskId = input.dataset.taskId
+      await fetch('/api/tasks', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: taskId, due_date: input.value || null })
       })
       await reload()
     })

@@ -1,0 +1,135 @@
+.view-toggle {
+  display: flex;
+  gap: 2px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 3px;
+}
+
+.view-toggle-btn {
+  background: transparent;
+  border: none;
+  color: var(--ink-muted);
+  font-size: 12px;
+  font-weight: 800;
+  padding: 6px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all .15s ease;
+}
+
+.view-toggle-btn.active {
+  background: var(--accent);
+  color: #15171c;
+}
+
+.timeline-empty {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--ink-faint);
+}
+
+.timeline {
+  position: relative;
+  padding: 20px 24px 24px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg, 16px);
+  overflow-x: auto;
+}
+
+.timeline-months {
+  position: relative;
+  height: 24px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 12px;
+  margin-left: 180px;
+}
+
+.timeline-month-label {
+  position: absolute;
+  top: 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-faint);
+  transform: translateX(-4px);
+}
+
+.timeline-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+}
+
+.timeline-label {
+  width: 164px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.timeline-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.timeline-stage {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 999px;
+  width: fit-content;
+}
+
+.timeline-track {
+  position: relative;
+  flex: 1;
+  height: 28px;
+  min-width: 400px;
+}
+
+.timeline-bar {
+  position: absolute;
+  top: 6px;
+  height: 16px;
+  background: var(--accent);
+  border-radius: 999px;
+  opacity: .85;
+}
+
+.timeline-milestone {
+  position: absolute;
+  top: -2px;
+  transform: translateX(-50%);
+  color: var(--review);
+  font-size: 14px;
+  cursor: default;
+}
+
+/* Task panel milestone indicator */
+.task-row.task-milestone {
+  border-color: rgba(225,193,95,.3);
+}
+
+.task-milestone-icon {
+  color: var(--review);
+  font-size: 13px;
+}
+
+.task-milestone-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--ink-muted);
+  white-space: nowrap;
+}

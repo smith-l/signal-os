@@ -372,7 +372,7 @@ export class MyMCP extends McpAgent<Env> {
       }
     );
 
-    // ── GET PROJECTS ───────────────────────────────────────────────────
+     // ── GET PROJECTS ───────────────────────────────────────────────────
     this.server.registerTool(
       "get_projects",
       {
@@ -391,7 +391,7 @@ export class MyMCP extends McpAgent<Env> {
       }
     );
 
-        // ── CREATE PROJECT ─────────────────────────────────────────────────
+            // ── CREATE PROJECT ─────────────────────────────────────────────────
     this.server.registerTool(
       "create_project",
       {
@@ -401,14 +401,16 @@ export class MyMCP extends McpAgent<Env> {
           category: z.string().optional().describe("Free-text grouping tag, e.g. 'in-role', 'signal_os_build'"),
           stage: z.string().optional().describe("Initial stage. Defaults to 'Not Started'."),
           rag_status: z.enum(["GREEN", "AMBER", "RED"]).optional().describe("Initial RAG health status"),
+          start_date: z.string().optional().describe("Start date, YYYY-MM-DD"),
+          target_end_date: z.string().optional().describe("Target end date, YYYY-MM-DD"),
           next_action: z.string().optional(),
           notes: z.string().optional().describe("High-level summary — richer content goes in project prep sections, not here"),
         }
       },
-      async ({ title, category, stage, rag_status, next_action, notes }) => {
+      async ({ title, category, stage, rag_status, start_date, target_end_date, next_action, notes }) => {
         const result = await this.env.signal_os_db
-          .prepare("INSERT INTO projects (title, category, stage, rag_status, next_action, notes) VALUES (?, ?, ?, ?, ?, ?)")
-          .bind(title, category || "", stage || "Not Started", rag_status || "", next_action || "", notes || "")
+          .prepare("INSERT INTO projects (title, category, stage, rag_status, start_date, target_end_date, next_action, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+          .bind(title, category || "", stage || "Not Started", rag_status || "", start_date || null, target_end_date || null, next_action || "", notes || "")
           .run();
         const projectId = result.meta.last_row_id;
  
@@ -430,7 +432,7 @@ export class MyMCP extends McpAgent<Env> {
     );
  
 
-     // ── UPDATE PROJECT ─────────────────────────────────────────────────
+        // ── UPDATE PROJECT ─────────────────────────────────────────────────
     this.server.registerTool(
       "update_project",
       {
@@ -441,12 +443,14 @@ export class MyMCP extends McpAgent<Env> {
           category: z.string().optional(),
           stage: z.string().optional(),
           rag_status: z.enum(["GREEN", "AMBER", "RED"]).optional(),
+          start_date: z.string().optional().describe("Start date, YYYY-MM-DD"),
+          target_end_date: z.string().optional().describe("Target end date, YYYY-MM-DD"),
           next_action: z.string().optional(),
           notes: z.string().optional(),
         }
       },
       async ({ project_id, ...fields }) => {
-        const allowed = ["title", "category", "stage", "rag_status", "next_action", "notes"];
+        const allowed = ["title", "category", "stage", "rag_status", "start_date", "target_end_date", "next_action", "notes"];
         const updates = Object.entries(fields).filter(([k, v]) => allowed.includes(k) && v !== undefined);
         if (updates.length === 0) {
           return { content: [{ type: "text", text: "No valid fields to update." }] };

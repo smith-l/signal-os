@@ -33,6 +33,7 @@ window.__closePlaybook = closePlaybook
 
 let currentModule = 'career'
 let activeKbId = null
+let projectsView = 'board'
 let draggedCardId = null
 let draggedEntityType = null
 
@@ -47,7 +48,7 @@ const entityServices = {
 async function renderModule() {
   if (currentModule === 'career') return await Applications()
   if (currentModule === 'playbooks') return await Playbooks()
-  if (currentModule === 'projects') return await Projects()
+  if (currentModule === 'projects') return await Projects(projectsView)
   if (currentModule === 'knowledge') return await KnowledgeHub(activeKbId)
   return await Applications()
 }
@@ -94,6 +95,13 @@ function attachModuleHandlers() {
   // Projects module — add form
   const addProjectButton = document.querySelector('#add-project-btn')
   const saveProjectButton = document.querySelector('#save-project')
+
+  document.querySelectorAll('.view-toggle-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      projectsView = btn.dataset.view
+      await renderApp()
+    })
+  })
 
   if (addProjectButton) {
     addProjectButton.addEventListener('click', () => {

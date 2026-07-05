@@ -115,6 +115,8 @@ export const projectConfig = {
     { key: 'category', label: 'Category', type: 'text' },
     { key: 'stage', label: 'Stage', type: 'select', options: ['Not Started', 'In Planning', 'Active', 'Blocked', 'Done'] },
     { key: 'rag_status', label: 'RAG Status', type: 'select', options: ['GREEN', 'AMBER', 'RED'] },
+    { key: 'start_date', label: 'Start Date', type: 'date' },
+    { key: 'target_end_date', label: 'Target End Date', type: 'date' },
     { key: 'next_action', label: 'Next Action', type: 'textarea' },
     { key: 'notes', label: 'Notes', type: 'textarea' },
   ],
