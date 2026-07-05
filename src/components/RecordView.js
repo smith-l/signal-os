@@ -233,15 +233,17 @@ export async function openRecordView(recordId, allRecords, onBack, config) {
   const activeStages = new Set(config.activeStages || config.stages)
   const roleNav = allRecords
     .filter(r => activeStages.has(r[config.stageField]))
-    .map(r => `
+    .map(r => {
+      const stageClass = config.stageClassMap?.[r[config.stageField]] || ''
+      return `
       <button
         class="role-nav-btn ${String(r.id) === String(recordId) ? 'active' : ''}"
         data-id="${r.id}"
       >
         <span class="role-nav-company">${r[config.titleField]}</span>
-        <span class="role-nav-status">${r[config.stageField]}</span>
+        <span class="role-nav-status ${stageClass}">${r[config.stageField]}</span>
       </button>
-    `).join('')
+    `}).join('')
 
   const firstSection = sections[0]
   const quickLinksHtml = (config.quickLinks || [])

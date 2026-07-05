@@ -22,6 +22,7 @@ export async function Projects() {
       <article><span>${projects.length}</span><p>Projects</p></article>
       <article><span>${projects.filter(p => p.stage === 'Active').length}</span><p>Active</p></article>
       <article><span>${projects.filter(p => p.stage === 'Blocked').length}</span><p>Blocked</p></article>
+      <article><span>${projects.filter(p => p.stage === 'Done').length}</span><p>Done</p></article>
     </section>
 
     ${Board(projects, projectConfig)}

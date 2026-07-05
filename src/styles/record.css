@@ -513,6 +513,13 @@
 .status-offer    { background: var(--teal-soft); color: var(--teal); }
 .status-closed   { background: rgba(51,65,85,.4); color: #475569; }
 
+/* Project stage badges for role nav — same palette, project stage vocabulary */
+.status-not-started   { background: var(--unknown-bg); color: var(--unknown); }
+.status-in-planning   { background: var(--accent-soft); color: var(--accent-text); }
+.status-active-stage  { background: var(--pass-bg); color: var(--pass); }
+.status-blocked-stage { background: rgba(228,111,111,.15); color: var(--caution); }
+.status-done-stage    { background: var(--teal-soft); color: var(--teal); }
+
 /* Section nav active */
 .section-nav-btn.active {
   background: var(--accent);

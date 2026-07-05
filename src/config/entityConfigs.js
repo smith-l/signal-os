@@ -15,6 +15,16 @@ export const applicationConfig = {
   stageField: 'status',
   activeStages: ['Applied', 'TA Screen', 'HM Interview', 'Peer', 'Panel', 'Offer'], // excludes Closed for nav lists
 
+  stageClassMap: {
+    'Applied': 'status-applied',
+    'TA Screen': 'status-ta',
+    'HM Interview': 'status-hm',
+    'Peer': 'status-peer',
+    'Panel': 'status-panel',
+    'Offer': 'status-offer',
+    'Closed': 'status-closed',
+  },
+
   titleField: 'company',
   subtitleField: 'role_title',
 
@@ -74,6 +84,14 @@ export const projectConfig = {
   stages: ['Not Started', 'In Planning', 'Active', 'Blocked', 'Done'],
   stageField: 'stage',
   activeStages: ['Not Started', 'In Planning', 'Active', 'Blocked'], // excludes Done for nav lists
+
+  stageClassMap: {
+    'Not Started': 'status-not-started',
+    'In Planning': 'status-in-planning',
+    'Active': 'status-active-stage',
+    'Blocked': 'status-blocked-stage',
+    'Done': 'status-done-stage',
+  },
 
   titleField: 'title',
   subtitleField: 'category',
