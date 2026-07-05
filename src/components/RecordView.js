@@ -437,11 +437,17 @@ function attachEditPanelHandlers(recordId, allRecords, onBack, config) {
       updates[f.key] = document.querySelector(`#edit-${f.key}`).value
     })
 
-    await fetch(config.apiBase, {
+    const res = await fetch(config.apiBase, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates)
     })
+
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '')
+      alert(`Save failed (${res.status}). ${errText || 'Check the console/logs.'}`)
+      return
+    }
 
     closePanel()
 
