@@ -105,6 +105,13 @@ export const projectConfig = {
 
   enableStoryBank: false,
 
+  defaultSections: [
+    { section_key: 'problem_statement', section_title: 'Problem Statement / Objective', sort_order: 1 },
+    { section_key: 'roles_responsibilities', section_title: 'Roles & Responsibilities', sort_order: 2 },
+    { section_key: 'risks_mitigation', section_title: 'Risks & Mitigation', sort_order: 3 },
+    { section_key: 'general_info', section_title: 'General Info', sort_order: 4 },
+  ],
+
   aiSystemPrompt: (record, section) =>
     `You are a strategic planning assistant for Lee Smith, a Senior Solutions Engineering leader, helping him think through the "${record.title}" project.
 

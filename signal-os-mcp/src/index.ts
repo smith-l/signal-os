@@ -391,7 +391,7 @@ export class MyMCP extends McpAgent<Env> {
       }
     );
 
-    // ── CREATE PROJECT ─────────────────────────────────────────────────
+        // ── CREATE PROJECT ─────────────────────────────────────────────────
     this.server.registerTool(
       "create_project",
       {
@@ -410,11 +410,27 @@ export class MyMCP extends McpAgent<Env> {
           .prepare("INSERT INTO projects (title, category, stage, rag_status, next_action, notes) VALUES (?, ?, ?, ?, ?, ?)")
           .bind(title, category || "", stage || "Not Started", rag_status || "", next_action || "", notes || "")
           .run();
-        return { content: [{ type: "text", text: `Created project '${title}' (ID ${result.meta.last_row_id}). Stage: ${stage || "Not Started"}.` }] };
+        const projectId = result.meta.last_row_id;
+ 
+        const defaultSections = [
+          { key: "problem_statement", title: "Problem Statement / Objective", order: 1, content: "" },
+          { key: "roles_responsibilities", title: "Roles & Responsibilities", order: 2, content: "| Owner | Role | Responsibility |\n|---|---|---|\n| | | |\n" },
+          { key: "risks_mitigation", title: "Risks & Mitigation", order: 3, content: "| Risk | Impact | Likelihood | Mitigation |\n|---|---|---|---|\n| | | | |\n" },
+          { key: "general_info", title: "General Info", order: 4, content: "" },
+        ];
+        for (const s of defaultSections) {
+          await this.env.signal_os_db
+            .prepare("INSERT INTO project_prep (project_id, section_key, section_title, content, sort_order) VALUES (?, ?, ?, ?, ?)")
+            .bind(projectId, s.key, s.title, s.content, s.order)
+            .run();
+        }
+ 
+        return { content: [{ type: "text", text: `Created project '${title}' (ID ${projectId}) with the standard section template. Stage: ${stage || "Not Started"}.` }] };
       }
     );
+ 
 
-    // ── UPDATE PROJECT ─────────────────────────────────────────────────
+     // ── UPDATE PROJECT ─────────────────────────────────────────────────
     this.server.registerTool(
       "update_project",
       {
@@ -448,7 +464,7 @@ export class MyMCP extends McpAgent<Env> {
         return { content: [{ type: "text", text: `Updated project ${project_id} (${project?.title}). Stage: ${project?.stage}. RAG: ${project?.rag_status || 'not set'}.` }] };
       }
     );
-
+ 
     // ── GET PROJECT PREP SECTIONS ────────────────────────────────────────
     this.server.registerTool(
       "get_project_prep",
@@ -466,6 +482,47 @@ export class MyMCP extends McpAgent<Env> {
         query += " ORDER BY sort_order ASC";
         const { results } = await this.env.signal_os_db.prepare(query).bind(...binds).all();
         return { content: [{ type: "text", text: JSON.stringify(results, null, 2) }] };
+      }
+    );
+ 
+    // ── CREATE PROJECT PREP SECTION ──────────────────────────────────────
+    this.server.registerTool(
+      "create_project_prep_section",
+      {
+        description: "Create a new custom prep/content section for a project. Mirrors create_prep_section but for projects.",
+        inputSchema: {
+          project_id: z.number(),
+          section_key: z.string().describe("Short machine key, e.g. 'stakeholder_map'"),
+          section_title: z.string().describe("Display title, e.g. 'Stakeholder Map'"),
+          content: z.string().optional(),
+          sort_order: z.number().optional(),
+        }
+      },
+      async ({ project_id, section_key, section_title, content, sort_order }) => {
+        const result = await this.env.signal_os_db
+          .prepare("INSERT INTO project_prep (project_id, section_key, section_title, content, sort_order) VALUES (?, ?, ?, ?, ?)")
+          .bind(project_id, section_key, section_title, content || "", sort_order || 0)
+          .run();
+        return { content: [{ type: "text", text: `Created section '${section_title}' (ID ${result.meta.last_row_id}) on project ${project_id}.` }] };
+      }
+    );
+ 
+    // ── UPDATE PROJECT PREP SECTION ───────────────────────────────────────
+    this.server.registerTool(
+      "update_project_prep_section",
+      {
+        description: "Write or update content in a prep section for a project. Mirrors update_prep_section but for projects.",
+        inputSchema: {
+          id: z.number().describe("The project_prep section ID (not the project ID)"),
+          content: z.string(),
+        }
+      },
+      async ({ id, content }) => {
+        await this.env.signal_os_db
+          .prepare("UPDATE project_prep SET content = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
+          .bind(content, id)
+          .run();
+        return { content: [{ type: "text", text: `Updated project_prep section ${id}. ${content.length} characters written.` }] };
       }
     );
 
