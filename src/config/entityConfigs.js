@@ -78,7 +78,15 @@ export const projectConfig = {
   titleField: 'title',
   subtitleField: 'category',
 
-  badge: null, // no stability-style badge for projects
+  badge: {
+    field: 'rag_status',
+    options: ['GREEN', 'AMBER', 'RED'],
+    classMap: {
+      GREEN: 'badge-green',
+      AMBER: 'badge-amber',
+      RED: 'badge-red'
+    }
+  },
 
   cardFields: [
     { key: 'next_action' },
@@ -88,6 +96,7 @@ export const projectConfig = {
     { key: 'title', label: 'Title', type: 'text' },
     { key: 'category', label: 'Category', type: 'text' },
     { key: 'stage', label: 'Stage', type: 'select', options: ['Not Started', 'In Planning', 'Active', 'Blocked', 'Done'] },
+    { key: 'rag_status', label: 'RAG Status', type: 'select', options: ['GREEN', 'AMBER', 'RED'] },
     { key: 'next_action', label: 'Next Action', type: 'textarea' },
     { key: 'notes', label: 'Notes', type: 'textarea' },
   ],

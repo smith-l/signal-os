@@ -28,7 +28,6 @@ function cardHTML(record, config) {
       ${subtitle ? `<p class="card-role">${subtitle}</p>` : ''}
       ${fieldsHtml}
       <div class="card-links">
-        <button class="card-link open-record-btn" data-id="${record.id}" data-entity-type="${config.typeKey}" onclick="event.stopPropagation()">Open Record</button>
         <button class="card-link card-delete-btn" data-id="${record.id}" data-entity-type="${config.typeKey}" data-title="${title || ''}" onclick="event.stopPropagation()" title="Delete">
           <i class="ti ti-trash" aria-hidden="true"></i>
         </button>
