@@ -21,8 +21,8 @@ export async function onRequestGet(context) {
 export async function onRequestPost(context) {
   const body = await context.request.json()
   const result = await context.env.signal_os_db
-    .prepare(`INSERT INTO projects (title, category, stage, rag_status, next_action, notes) VALUES (?, ?, ?, ?, ?, ?)`)
-    .bind(body.title, body.category || '', body.stage || 'Not Started', body.rag_status || '', body.next_action || '', body.notes || '')
+    .prepare(`INSERT INTO projects (title, category, stage, rag_status, start_date, target_end_date, next_action, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
+    .bind(body.title, body.category || '', body.stage || 'Not Started', body.rag_status || '', body.start_date || null, body.target_end_date || null, body.next_action || '', body.notes || '')
     .run()
 
   const projectId = result.meta.last_row_id
@@ -40,8 +40,8 @@ export async function onRequestPost(context) {
 export async function onRequestPut(context) {
   const body = await context.request.json()
   await context.env.signal_os_db
-    .prepare(`UPDATE projects SET title=?, category=?, stage=?, rag_status=?, next_action=?, notes=?, updated_at=CURRENT_TIMESTAMP WHERE id=?`)
-    .bind(body.title, body.category || '', body.stage, body.rag_status || '', body.next_action || '', body.notes || '', body.id)
+    .prepare(`UPDATE projects SET title=?, category=?, stage=?, rag_status=?, start_date=?, target_end_date=?, next_action=?, notes=?, updated_at=CURRENT_TIMESTAMP WHERE id=?`)
+    .bind(body.title, body.category || '', body.stage, body.rag_status || '', body.start_date || null, body.target_end_date || null, body.next_action || '', body.notes || '', body.id)
     .run()
   return Response.json({ success: true })
 }
