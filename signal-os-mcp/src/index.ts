@@ -295,6 +295,82 @@ export class MyMCP extends McpAgent<Env> {
         return { content: [{ type: "text", text: JSON.stringify(results, null, 2) }] };
       }
     );
+    // ── GET TASKS ──────────────────────────────────────────────────────
+    this.server.registerTool(
+      "get_tasks",
+      {
+        description: "Get tasks from the Signal OS planning board. Tasks are grouped by module (e.g. 'maintel', 'job_search', 'signal_os_build') and tracked by status/stage. Optionally filter by module and/or linked application_id.",
+        inputSchema: {
+          module: z.string().optional().describe("Filter by module, e.g. 'maintel', 'signal_os_build'. Omit to get all modules."),
+          application_id: z.number().optional().describe("Filter by linked application ID, if the task is tied to a specific role."),
+        }
+      },
+      async ({ module, application_id }) => {
+        let query = "SELECT * FROM tasks WHERE 1=1";
+        const binds: any[] = [];
+        if (module) { query += " AND module = ?"; binds.push(module); }
+        if (application_id) { query += " AND application_id = ?"; binds.push(application_id); }
+        query += " ORDER BY updated_at DESC";
+        const { results } = await this.env.signal_os_db.prepare(query).bind(...binds).all();
+        return { content: [{ type: "text", text: JSON.stringify(results, null, 2) }] };
+      }
+    );
+
+    // ── CREATE TASK ───────────────────────────────────────────────────
+    this.server.registerTool(
+      "create_task",
+      {
+        description: "Create a new task on the Signal OS planning board. Use module to group related tasks (e.g. all Maintel transformation work under module 'maintel'). Link to a job application via application_id if relevant.",
+        inputSchema: {
+          title: z.string().describe("Short title for the task"),
+          status: z.string().optional().describe("Initial stage, e.g. Backlog, Active, Blocked, Done. Defaults to Backlog."),
+          module: z.string().optional().describe("Grouping tag, e.g. 'maintel', 'job_search', 'signal_os_build'. Defaults to 'general'."),
+          notes: z.string().optional().describe("Details, plan, or context in markdown format"),
+          application_id: z.number().optional().describe("Optional linked application ID"),
+        }
+      },
+      async ({ title, status, module, notes, application_id }) => {
+        const result = await this.env.signal_os_db
+          .prepare("INSERT INTO tasks (title, status, module, notes, application_id) VALUES (?, ?, ?, ?, ?)")
+          .bind(title, status || "Backlog", module || "general", notes || "", application_id || null)
+          .run();
+        return { content: [{ type: "text", text: `Created task '${title}' (ID ${result.meta.last_row_id}) in module '${module || "general"}'. Status: ${status || "Backlog"}.` }] };
+      }
+    );
+
+    // ── UPDATE TASK ───────────────────────────────────────────────────
+    this.server.registerTool(
+      "update_task",
+      {
+        description: "Update fields on a task. Provide the task_id and any fields to change — commonly status, to move the task across the board.",
+        inputSchema: {
+          task_id: z.number().describe("The ID of the task to update"),
+          title: z.string().optional().describe("New title"),
+          status: z.string().optional().describe("New stage, e.g. Backlog, Active, Blocked, Done"),
+          module: z.string().optional().describe("New module grouping"),
+          notes: z.string().optional().describe("New notes/plan content in markdown"),
+          application_id: z.number().optional().describe("Link or re-link to an application ID"),
+        }
+      },
+      async ({ task_id, ...fields }) => {
+        const allowed = ["title", "status", "module", "notes", "application_id"];
+        const updates = Object.entries(fields).filter(([k, v]) => allowed.includes(k) && v !== undefined);
+        if (updates.length === 0) {
+          return { content: [{ type: "text", text: "No valid fields to update." }] };
+        }
+        const setClauses = updates.map(([k]) => `${k} = ?`).join(", ");
+        const values = updates.map(([, v]) => v);
+        await this.env.signal_os_db
+          .prepare(`UPDATE tasks SET ${setClauses}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`)
+          .bind(...values, task_id)
+          .run();
+        const task = await this.env.signal_os_db
+          .prepare("SELECT title, status, module FROM tasks WHERE id = ?")
+          .bind(task_id)
+          .first() as any;
+        return { content: [{ type: "text", text: `Updated task ${task_id} (${task?.title}). Status: ${task?.status}. Module: ${task?.module}.` }] };
+      }
+    );
   }
 }
 

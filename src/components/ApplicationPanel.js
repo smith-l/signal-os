@@ -9,6 +9,8 @@ import {
   getAllStories
 } from '../services/storyService.js'
 
+import { applicationConfig } from '../config/entityConfigs.js'
+
 const STATUSES = [
   'Applied',
   'TA Screen',
@@ -146,7 +148,7 @@ export async function openApplicationPanel(applicationId, onSaved) {
         const { openRecordView } = await import('./RecordView.js')
         const allApps = await getApplications()
         panel.classList.add('hidden')
-        await openRecordView(application.id, allApps, onSaved)
+        await openRecordView(application.id, allApps, onSaved, applicationConfig)
       } catch(e) {
         console.error('Open Record error:', e)
       }

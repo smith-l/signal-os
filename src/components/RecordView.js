@@ -1,26 +1,6 @@
-const STABILITY_BADGE = {
-  PASS: 'badge-pass',
-  REVIEW: 'badge-review',
-  CAUTION: 'badge-caution',
-  UNKNOWN: 'badge-unknown'
-}
-
-const STATUS_BADGE = {
-  'Applied': 'status-applied',
-  'TA Screen': 'status-ta',
-  'HM Interview': 'status-hm',
-  'Peer': 'status-peer',
-  'Panel': 'status-panel',
-  'Offer': 'status-offer',
-  'Closed': 'status-closed'
-}
-
-const STATUSES = ['Applied', 'TA Screen', 'HM Interview', 'Peer', 'Panel', 'Offer', 'Closed']
-const STABILITY_OPTIONS = ['PASS', 'REVIEW', 'CAUTION', 'UNKNOWN']
-
 import { marked } from 'marked'
 
-// ── Story bank cache ──────────────────────────────────────────────────────────
+// ── Story bank cache (application-only feature) ───────────────────────────────
 let storyBankCache = null
 
 async function getStoryBank() {
@@ -120,11 +100,6 @@ function cleanContent(text) {
   return text.replace(/^```[a-z]*\n?/i, '').replace(/\n?```\s*$/i, '').trim()
 }
 
-function renderMarkdown(text) {
-  if (!text) return ''
-  return marked.parse(cleanContent(text), { breaks: true, gfm: true })
-}
-
 function splitIntoCards(content) {
   if (!content) return []
   const cleaned = cleanContent(content)
@@ -132,7 +107,7 @@ function splitIntoCards(content) {
   return chunks
 }
 
-function renderSection(section, appId) {
+function renderSection(section, recordId) {
   const chunks = splitIntoCards(section.content)
 
   const contentHtml = chunks.length > 0
@@ -170,9 +145,9 @@ function renderSection(section, appId) {
           type="text"
           placeholder="Ask AI to generate or update this section..."
           data-section-id="${section.id}"
-          data-app-id="${appId}"
+          data-record-id="${recordId}"
         />
-        <button class="ai-submit-btn" data-section-id="${section.id}" data-app-id="${appId}">
+        <button class="ai-submit-btn" data-section-id="${section.id}" data-record-id="${recordId}">
           <i class="ti ti-sparkles" aria-hidden="true"></i>
         </button>
       </div>
@@ -180,47 +155,37 @@ function renderSection(section, appId) {
   `
 }
 
-function renderEditPanel(app) {
+function renderEditField(record, field) {
+  const value = record[field.key] || ''
+  if (field.type === 'select') {
+    return `
+      <label>${field.label}</label>
+      <select id="edit-${field.key}">
+        ${field.options.map(o => `<option value="${o}" ${value === o ? 'selected' : ''}>${o}</option>`).join('')}
+      </select>
+    `
+  }
+  if (field.type === 'textarea') {
+    return `
+      <label>${field.label}</label>
+      <textarea id="edit-${field.key}" rows="4">${value}</textarea>
+    `
+  }
+  return `
+    <label>${field.label}</label>
+    <input id="edit-${field.key}" type="text" value="${value}" />
+  `
+}
+
+function renderEditPanel(record, config) {
   return `
     <div class="app-edit-panel hidden" id="app-edit-panel">
       <div class="app-edit-header">
-        <h3>Edit Application</h3>
+        <h3>Edit ${config.label}</h3>
         <button class="app-edit-close" id="app-edit-close">✕</button>
       </div>
       <div class="app-edit-body">
-        <label>Company</label>
-        <input id="edit-company" type="text" value="${app.company || ''}" />
-
-        <label>Role Title</label>
-        <input id="edit-role" type="text" value="${app.role_title || ''}" />
-
-        <label>Status</label>
-        <select id="edit-status">
-          ${STATUSES.map(s => `<option value="${s}" ${app.status === s ? 'selected' : ''}>${s}</option>`).join('')}
-        </select>
-
-        <label>Recruiter</label>
-        <input id="edit-recruiter" type="text" value="${app.recruiter || ''}" />
-
-        <label>Salary / Package</label>
-        <input id="edit-salary" type="text" value="${app.salary || ''}" />
-
-        <label>Stability</label>
-        <select id="edit-stability">
-          ${STABILITY_OPTIONS.map(s => `<option value="${s}" ${app.stability_check === s ? 'selected' : ''}>${s}</option>`).join('')}
-        </select>
-
-        <label>Next Action</label>
-        <textarea id="edit-next-action" rows="2">${app.next_action || ''}</textarea>
-
-        <label>Job Link</label>
-        <input id="edit-job-link" type="text" value="${app.job_link || ''}" />
-
-        <label>Applied Date</label>
-        <input id="edit-applied-date" type="text" placeholder="e.g. 8 June 2026" value="${app.applied_date || ''}" />
-
-        <label>Notes</label>
-        <textarea id="edit-notes" rows="4">${app.notes || ''}</textarea>
+        ${config.editFields.map(f => renderEditField(record, f)).join('')}
       </div>
       <div class="app-edit-footer">
         <button class="btn-primary" id="app-edit-save">Save</button>
@@ -231,19 +196,21 @@ function renderEditPanel(app) {
   `
 }
 
-function renderRecordHeader(app) {
+function renderRecordHeader(record, config) {
+  const stage = record[config.stageField]
+  const badgeValue = config.badge ? record[config.badge.field] : null
   return `
     <div class="record-header" id="record-header">
       <div>
-        <p class="eyebrow">${app.status}</p>
-        <h1 class="record-title">${app.company}</h1>
-        <p class="record-role">${app.role_title}</p>
-        ${app.recruiter ? `<p class="record-recruiter"><i class="ti ti-user" aria-hidden="true"></i> ${app.recruiter}</p>` : ''}
-        ${app.applied_date ? `<p class="record-applied"><i class="ti ti-calendar" aria-hidden="true"></i> Applied ${app.applied_date}</p>` : ''}
+        <p class="eyebrow">${stage}</p>
+        <h1 class="record-title">${record[config.titleField] || ''}</h1>
+        ${record[config.subtitleField] ? `<p class="record-role">${record[config.subtitleField]}</p>` : ''}
+        ${record.recruiter ? `<p class="record-recruiter"><i class="ti ti-user" aria-hidden="true"></i> ${record.recruiter}</p>` : ''}
+        ${record.applied_date ? `<p class="record-applied"><i class="ti ti-calendar" aria-hidden="true"></i> Applied ${record.applied_date}</p>` : ''}
       </div>
       <div class="record-meta">
-        ${app.stability_check ? `<span class="stability-badge ${STABILITY_BADGE[app.stability_check] || 'badge-unknown'}">${app.stability_check}</span>` : ''}
-        ${app.salary ? `<span class="record-salary">${app.salary}</span>` : ''}
+        ${badgeValue ? `<span class="stability-badge ${config.badge.classMap[badgeValue] || 'badge-unknown'}">${badgeValue}</span>` : ''}
+        ${record.salary ? `<span class="record-salary">${record.salary}</span>` : ''}
         <button class="edit-app-btn ql-btn" id="edit-app-btn">
           <i class="ti ti-edit" aria-hidden="true"></i> Edit
         </button>
@@ -252,30 +219,35 @@ function renderRecordHeader(app) {
   `
 }
 
-export async function openRecordView(applicationId, allApplications, onBack) {
-  const app = allApplications.find(a => String(a.id) === String(applicationId))
-  if (!app) return
+export async function openRecordView(recordId, allRecords, onBack, config) {
+  const record = allRecords.find(r => String(r.id) === String(recordId))
+  if (!record) return
 
-  const sections = await fetch(`/api/role-prep?application_id=${applicationId}`)
+  const sections = await fetch(`${config.prepApiBase}?${config.prepIdParam}=${recordId}`)
     .then(r => r.json())
 
   const container = document.querySelector('#record-view')
   container.classList.remove('hidden')
   document.querySelector('#main-content').classList.add('hidden')
 
-  const roleNav = allApplications
-    .filter(a => a.status !== 'Closed')
-    .map(a => `
+  const activeStages = new Set(config.activeStages || config.stages)
+  const roleNav = allRecords
+    .filter(r => activeStages.has(r[config.stageField]))
+    .map(r => `
       <button
-        class="role-nav-btn ${String(a.id) === String(applicationId) ? 'active' : ''}"
-        data-id="${a.id}"
+        class="role-nav-btn ${String(r.id) === String(recordId) ? 'active' : ''}"
+        data-id="${r.id}"
       >
-        <span class="role-nav-company">${a.company}</span>
-        <span class="role-nav-status ${STATUS_BADGE[a.status] || 'status-applied'}">${a.status}</span>
+        <span class="role-nav-company">${r[config.titleField]}</span>
+        <span class="role-nav-status">${r[config.stageField]}</span>
       </button>
     `).join('')
 
   const firstSection = sections[0]
+  const quickLinksHtml = (config.quickLinks || [])
+    .filter(ql => record[ql.field])
+    .map(ql => `<a href="${record[ql.field]}" class="ql-btn" target="_blank"><i class="ti ti-external-link" aria-hidden="true"></i> ${ql.label}</a>`)
+    .join('')
 
   container.innerHTML = `
     <button class="mobile-menu-toggle record-mobile-toggle" id="record-mobile-toggle" aria-label="Open menu">
@@ -307,27 +279,23 @@ export async function openRecordView(applicationId, allApplications, onBack) {
       </aside>
 
       <main class="record-main">
-        ${renderRecordHeader(app)}
-        ${renderEditPanel(app)}
+        ${renderRecordHeader(record, config)}
+        ${renderEditPanel(record, config)}
 
-        ${app.job_link ? `
-          <div class="record-quick-links">
-            <a href="${app.job_link}" class="ql-btn" target="_blank"><i class="ti ti-external-link" aria-hidden="true"></i> Job Description</a>
-          </div>
-        ` : ''}
+        ${quickLinksHtml ? `<div class="record-quick-links">${quickLinksHtml}</div>` : ''}
 
         <div id="section-content-area">
-          ${firstSection ? renderSection(firstSection, applicationId) : '<p class="empty-section">No sections found.</p>'}
+          ${firstSection ? renderSection(firstSection, recordId) : '<p class="empty-section">No sections found.</p>'}
         </div>
       </main>
 
     </div>
   `
 
-  attachRecordHandlers(applicationId, allApplications, sections, onBack)
+  attachRecordHandlers(recordId, allRecords, sections, onBack, config)
 }
 
-function attachEditPanelHandlers(applicationId, allApplications, onBack) {
+function attachEditPanelHandlers(recordId, allRecords, onBack, config) {
   const panel = document.querySelector('#app-edit-panel')
   const backdrop = document.querySelector('#app-edit-backdrop')
 
@@ -347,21 +315,12 @@ function attachEditPanelHandlers(applicationId, allApplications, onBack) {
   backdrop?.addEventListener('click', closePanel)
 
   document.querySelector('#app-edit-save')?.addEventListener('click', async () => {
-    const updates = {
-      id: Number(applicationId),
-      company:        document.querySelector('#edit-company').value,
-      role_title:     document.querySelector('#edit-role').value,
-      status:         document.querySelector('#edit-status').value,
-      recruiter:      document.querySelector('#edit-recruiter').value,
-      salary:         document.querySelector('#edit-salary').value,
-      stability_check:document.querySelector('#edit-stability').value,
-      next_action:    document.querySelector('#edit-next-action').value,
-      job_link:       document.querySelector('#edit-job-link').value,
-      applied_date:   document.querySelector('#edit-applied-date').value,
-      notes:          document.querySelector('#edit-notes').value,
-    }
+    const updates = { id: Number(recordId) }
+    config.editFields.forEach(f => {
+      updates[f.key] = document.querySelector(`#edit-${f.key}`).value
+    })
 
-    await fetch('/api/applications', {
+    await fetch(config.apiBase, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates)
@@ -369,18 +328,16 @@ function attachEditPanelHandlers(applicationId, allApplications, onBack) {
 
     closePanel()
 
-    // Re-render header with updated values
-    const apps = await fetch('/api/applications').then(r => r.json())
-    const updatedApp = apps.find(a => String(a.id) === String(applicationId))
-    if (updatedApp) {
-      document.querySelector('#record-header').outerHTML = renderRecordHeader(updatedApp)
-      // Re-attach edit button
-      attachEditPanelHandlers(applicationId, allApplications, onBack)
+    const records = await fetch(config.apiBase).then(r => r.json())
+    const updatedRecord = records.find(r => String(r.id) === String(recordId))
+    if (updatedRecord) {
+      document.querySelector('#record-header').outerHTML = renderRecordHeader(updatedRecord, config)
+      attachEditPanelHandlers(recordId, records, onBack, config)
     }
   })
 }
 
-function attachRecordHandlers(applicationId, allApplications, sections, onBack) {
+function attachRecordHandlers(recordId, allRecords, sections, onBack, config) {
 
   document.querySelector('#back-to-board')?.addEventListener('click', () => {
     document.querySelector('#record-view').classList.add('hidden')
@@ -388,7 +345,6 @@ function attachRecordHandlers(applicationId, allApplications, sections, onBack) 
     if (onBack) onBack()
   })
 
-  // Mobile record sidebar toggle
   const recordToggle = document.querySelector('#record-mobile-toggle')
   const recordBackdrop = document.querySelector('#record-sidebar-backdrop')
   const recordSidebarEl = document.querySelector('.record-sidebar')
@@ -408,8 +364,8 @@ function attachRecordHandlers(applicationId, allApplications, sections, onBack) 
 
   document.querySelectorAll('.role-nav-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
-      const apps = await fetch('/api/applications').then(r => r.json())
-      await openRecordView(btn.dataset.id, apps, onBack)
+      const records = await fetch(config.apiBase).then(r => r.json())
+      await openRecordView(btn.dataset.id, records, onBack, config)
     })
   })
 
@@ -423,20 +379,20 @@ function attachRecordHandlers(applicationId, allApplications, sections, onBack) 
       btn.classList.add('active')
 
       document.querySelector('#section-content-area').innerHTML =
-        renderSection(section, applicationId)
+        renderSection(section, recordId)
 
-      attachSectionHandlers(applicationId, sections)
+      attachSectionHandlers(recordId, sections, allRecords, config)
 
       recordSidebarEl?.classList.remove('open')
       recordBackdrop?.classList.remove('visible')
     })
   })
 
-  attachEditPanelHandlers(applicationId, allApplications, onBack)
-  attachSectionHandlers(applicationId, sections)
+  attachEditPanelHandlers(recordId, allRecords, onBack, config)
+  attachSectionHandlers(recordId, sections, allRecords, config)
 }
 
-function attachSectionHandlers(applicationId, sections) {
+function attachSectionHandlers(recordId, sections, allRecords, config) {
 
   document.querySelectorAll('.edit-section-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -459,7 +415,7 @@ function attachSectionHandlers(applicationId, sections) {
       const id = btn.dataset.id
       const content = document.querySelector(`#textarea-${id}`).value
 
-      await fetch('/api/role-prep', {
+      await fetch(config.prepApiBase, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, content })
@@ -486,7 +442,7 @@ function attachSectionHandlers(applicationId, sections) {
   document.querySelectorAll('.ai-submit-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
       const sectionId = btn.dataset.sectionId
-      const appId = btn.dataset.appId
+      const recId = btn.dataset.recordId
       const input = document.querySelector(`.ai-input[data-section-id="${sectionId}"]`)
       const prompt = input.value.trim()
       if (!prompt) return
@@ -494,29 +450,22 @@ function attachSectionHandlers(applicationId, sections) {
       btn.innerHTML = '<i class="ti ti-loader-2 spin" aria-hidden="true"></i>'
       btn.disabled = true
 
-      const apps = await fetch('/api/applications').then(r => r.json())
-      const app = apps.find(a => String(a.id) === String(appId))
+      const records = await fetch(config.apiBase).then(r => r.json())
+      const record = records.find(r => String(r.id) === String(recId))
       const section = sections.find(s => String(s.id) === String(sectionId))
       const currentContent = section?.content || ''
 
-      const systemPrompt = `You are an expert interview prep and job search assistant for Lee Smith, a Senior Solutions Engineering leader based in London. Help prepare for SE leadership interviews at enterprise SaaS companies.
-
-Role: ${app?.company} — ${app?.role_title}
-Status: ${app?.status}
-Section: ${section?.section_title}
-Current content: ${currentContent}
-
-Respond with the COMPLETE updated section in markdown — preserve all existing content and add or update only what the user has asked for. Do not remove anything unless explicitly asked to. No preamble or explanation.`
+      const systemPrompt = config.aiSystemPrompt(record, { ...section, content: currentContent })
 
       try {
-        const res = await fetch('/api/ai', {
+        const res = await fetch(config.aiApiBase, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             prompt,
             system: systemPrompt,
             section_id: sectionId,
-            application_id: appId,
+            [config.idParam]: recId,
             write_to_db: true
           })
         })
@@ -550,5 +499,5 @@ Respond with the COMPLETE updated section in markdown — preserve all existing 
     })
   })
 
-  attachStoryTableHandlers()
+  if (config.enableStoryBank) attachStoryTableHandlers()
 }

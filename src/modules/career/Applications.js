@@ -1,4 +1,5 @@
-import { ApplicationBoard } from '../../components/ApplicationBoard.js'
+import { Board } from '../../components/Board.js'
+import { applicationConfig } from '../../config/entityConfigs.js'
 
 export async function Applications() {
   const response = await fetch('/api/applications')
@@ -23,7 +24,7 @@ export async function Applications() {
       <article><span>${applications.filter(a => ['HM Interview','Peer','Panel'].includes(a.status)).length}</span><p>In Process</p></article>
     </section>
 
-    ${ApplicationBoard(applications)}
+    ${Board(applications, applicationConfig)}
 
     <div id="application-panel" class="application-panel hidden">
       <button id="close-panel" class="panel-close">×</button>

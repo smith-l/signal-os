@@ -12,12 +12,20 @@ import {
 } from './services/applicationService.js'
 
 import {
+  getProjects,
+  updateProject,
+  createProject
+} from './services/projectService.js'
+
+import {
   openRecordView
 } from './components/RecordView.js'
 
 import {
   AppShell
 } from './components/AppShell.js'
+
+import { entityConfigs } from './config/entityConfigs.js'
 
 // Expose playbook functions globally for inline onclick handlers
 window.__openPlaybook = openPlaybook
@@ -26,31 +34,43 @@ window.__closePlaybook = closePlaybook
 let currentModule = 'career'
 let activeKbId = null
 let draggedCardId = null
+let draggedEntityType = null
+
+// Registry mapping entity type -> its data service functions.
+// Board.js/RecordView.js never call these directly — only main.js's
+// dispatch layer does, keeping the shared components config-only.
+const entityServices = {
+  application: { getAll: getApplications, update: updateApplication, create: createApplication, apiBase: '/api/applications' },
+  project: { getAll: getProjects, update: updateProject, create: createProject, apiBase: '/api/projects' },
+}
 
 async function renderModule() {
   if (currentModule === 'career') return await Applications()
   if (currentModule === 'playbooks') return await Playbooks()
-  if (currentModule === 'projects') return Projects()
+  if (currentModule === 'projects') return await Projects()
   if (currentModule === 'knowledge') return await KnowledgeHub(activeKbId)
   return await Applications()
 }
 
-async function updateApplicationStatus(id, status) {
-  const applications = await getApplications()
-  const application = applications.find(app => String(app.id) === String(id))
-  if (!application) return
-  application.status = status
-  await updateApplication(application)
+async function updateEntityStage(entityType, id, stage) {
+  const service = entityServices[entityType]
+  const config = entityConfigs[entityType]
+  if (!service || !config) return
+  const records = await service.getAll()
+  const record = records.find(r => String(r.id) === String(id))
+  if (!record) return
+  record[config.stageField] = stage
+  await service.update(record)
   await renderApp()
 }
 
 function attachModuleHandlers() {
-  const addButton = document.querySelector('#add-application-btn')
-  const saveButton = document.querySelector('#save-application')
+  const addAppButton = document.querySelector('#add-application-btn')
+  const saveAppButton = document.querySelector('#save-application')
   const closePanel = document.querySelector('#close-panel')
 
-  if (addButton) {
-    addButton.addEventListener('click', () => {
+  if (addAppButton) {
+    addAppButton.addEventListener('click', () => {
       document.querySelector('#application-form').style.display = 'block'
     })
   }
@@ -61,12 +81,32 @@ function attachModuleHandlers() {
     })
   }
 
-  if (saveButton) {
-    saveButton.addEventListener('click', async () => {
+  if (saveAppButton) {
+    saveAppButton.addEventListener('click', async () => {
       const company = document.querySelector('#company').value
       const role = document.querySelector('#role').value
       if (!company || !role) { alert('Please enter a company and role'); return }
       await createApplication({ company, role_title: role, status: 'Applied' })
+      await renderApp()
+    })
+  }
+
+  // Projects module — add form
+  const addProjectButton = document.querySelector('#add-project-btn')
+  const saveProjectButton = document.querySelector('#save-project')
+
+  if (addProjectButton) {
+    addProjectButton.addEventListener('click', () => {
+      document.querySelector('#project-form').style.display = 'block'
+    })
+  }
+
+  if (saveProjectButton) {
+    saveProjectButton.addEventListener('click', async () => {
+      const title = document.querySelector('#project-title').value
+      const category = document.querySelector('#project-category').value
+      if (!title) { alert('Please enter a project title'); return }
+      await createProject({ title, category, stage: 'Not Started' })
       await renderApp()
     })
   }
@@ -86,38 +126,53 @@ function attachModuleHandlers() {
     })
   })
 
+  // Delete — dispatches by data-entity-type, works for both applications and projects
   document.querySelectorAll('.card-delete-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
-      if (!confirm(`Delete ${btn.dataset.company}? This removes all prep sections and cannot be undone.`)) return
-      await fetch(`/api/applications?id=${btn.dataset.id}`, { method: 'DELETE' })
+      const entityType = btn.dataset.entityType
+      const service = entityServices[entityType]
+      if (!service) return
+      if (!confirm(`Delete ${btn.dataset.title}? This removes all prep sections and cannot be undone.`)) return
+      await fetch(`${service.apiBase}?id=${btn.dataset.id}`, { method: 'DELETE' })
       await renderApp()
     })
   })
 
-  document.querySelectorAll('.application-card').forEach(card => {
+  // Card click -> open record view — dispatches by data-entity-type
+  document.querySelectorAll('.card[data-entity-type]').forEach(card => {
     card.addEventListener('click', async event => {
       if (event.target.tagName === 'A') return
-      const applications = await getApplications()
-      await openRecordView(card.dataset.id, applications, renderApp)
+      const entityType = card.dataset.entityType
+      const service = entityServices[entityType]
+      const config = entityConfigs[entityType]
+      if (!service || !config) return
+      const records = await service.getAll()
+      await openRecordView(card.dataset.id, records, renderApp, config)
     })
   })
 
   document.querySelectorAll('.open-record-btn').forEach(btn => {
     btn.addEventListener('click', async event => {
       event.stopPropagation()
-      const applications = await getApplications()
-      await openRecordView(btn.dataset.id, applications, renderApp)
+      const entityType = btn.dataset.entityType
+      const service = entityServices[entityType]
+      const config = entityConfigs[entityType]
+      if (!service || !config) return
+      const records = await service.getAll()
+      await openRecordView(btn.dataset.id, records, renderApp, config)
     })
   })
 
   document.querySelectorAll('.draggable-card').forEach(card => {
     card.addEventListener('dragstart', () => {
       draggedCardId = card.dataset.id
+      draggedEntityType = card.dataset.entityType
       card.classList.add('dragging')
     })
     card.addEventListener('dragend', () => {
       card.classList.remove('dragging')
       draggedCardId = null
+      draggedEntityType = null
     })
   })
 
@@ -130,8 +185,10 @@ function attachModuleHandlers() {
     zone.addEventListener('drop', async event => {
       event.preventDefault()
       zone.classList.remove('drag-over')
-      if (!draggedCardId) return
-      await updateApplicationStatus(draggedCardId, zone.dataset.status)
+      // Guard against dropping a card into a column belonging to a different entity type —
+      // shouldn't happen given boards render one type at a time, but the check is cheap.
+      if (!draggedCardId || zone.dataset.entityType !== draggedEntityType) return
+      await updateEntityStage(draggedEntityType, draggedCardId, zone.dataset.stage)
     })
   })
 }
