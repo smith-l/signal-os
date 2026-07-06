@@ -41,6 +41,7 @@
   --overlay-faint: rgba(255,255,255,.025);
   --overlay-soft: rgba(255,255,255,.04);
   --overlay-medium: rgba(255,255,255,.05);
+  --prose: #c8d6e5;
 }
 
 [data-theme="light"] {
@@ -62,4 +63,5 @@
   --overlay-faint: rgba(0,0,0,.02);
   --overlay-soft: rgba(0,0,0,.035);
   --overlay-medium: rgba(0,0,0,.05);
+  --prose: #33383f;
 }
