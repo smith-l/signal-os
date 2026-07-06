@@ -29,28 +29,42 @@ function kbButton(section, activeKbId) {
   `
 }
 
-export async function Sidebar(currentModule, activeKbId) {
+export async function Sidebar(currentModule, activeKbId, personalManuallyExpanded) {
   const kbSections = await getKbSections()
   const personalKb = kbSections.filter(s => PERSONAL_KB_TITLES.includes(s.section_title))
   const roleKb = kbSections.filter(s => !PERSONAL_KB_TITLES.includes(s.section_title))
 
   const knowledgeActive = currentModule === 'knowledge'
+  const insidePersonal = currentModule === 'career' ||
+    (currentModule === 'knowledge' && personalKb.some(s => String(s.id) === String(activeKbId)))
+  const personalExpanded = personalManuallyExpanded || insidePersonal
 
   return `
     <aside class="sidebar">
       <h1>Signal OS</h1>
       <p class="version">Career Edition</p>
       <nav>
-        <p class="nav-section-label">Personal</p>
-
-        <button data-module="career" class="${currentModule === 'career' ? 'active' : ''}">
-          <i class="ti ti-briefcase" aria-hidden="true"></i>
-          Applications
-        </button>
-
-        ${personalKb.map(s => kbButton(s, activeKbId)).join('')}
-
-        <p class="nav-section-label">Role</p>
+        <div class="nav-group">
+          <button
+            data-personal-toggle
+            class="${insidePersonal ? 'active' : ''} nav-group-toggle"
+          >
+            <i class="ti ti-user" aria-hidden="true"></i>
+            Personal
+            <i class="ti ti-chevron-down nav-chevron ${personalExpanded ? 'expanded' : ''}" aria-hidden="true"></i>
+          </button>
+          ${personalExpanded ? `
+            <div class="nav-subitems">
+              <button
+                data-module="career"
+                class="nav-subitem ${currentModule === 'career' ? 'active' : ''}"
+              >
+                Applications
+              </button>
+              ${personalKb.map(s => kbButton(s, activeKbId)).join('')}
+            </div>
+          ` : ''}
+        </div>
 
         <button data-module="projects" class="${currentModule === 'projects' ? 'active' : ''}">
           <i class="ti ti-clipboard-list" aria-hidden="true"></i>

@@ -33,6 +33,7 @@ window.__closePlaybook = closePlaybook
 
 let currentModule = 'career'
 let activeKbId = null
+let personalExpanded = false
 let projectsView = 'board'
 let draggedCardId = null
 let draggedEntityType = null
@@ -213,7 +214,7 @@ function attachModuleHandlers() {
 }
 
 async function renderApp() {
-  document.querySelector('#app').innerHTML = await AppShell(currentModule, activeKbId)
+  document.querySelector('#app').innerHTML = await AppShell(currentModule, activeKbId, personalExpanded)
   document.querySelector('#module-content').innerHTML = await renderModule()
 
   // Mobile sidebar toggle
@@ -241,6 +242,11 @@ async function renderApp() {
     })
   })
 
+  document.querySelector('[data-personal-toggle]')?.addEventListener('click', async () => {
+    personalExpanded = !personalExpanded
+    await renderApp()
+  })
+
   document.querySelectorAll('[data-module]').forEach(button => {
     button.addEventListener('click', async () => {
       const clickedModule = button.dataset.module
@@ -251,6 +257,9 @@ async function renderApp() {
         currentModule = clickedModule
         if (clickedModule === 'knowledge') activeKbId = null
       }
+      // Leaving Personal content collapses it back down, so it doesn't stay
+      // visibly expanded while sharing a screen on an unrelated module
+      if (clickedModule !== 'career') personalExpanded = false
       await renderApp()
     })
   })

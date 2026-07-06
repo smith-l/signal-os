@@ -1,6 +1,6 @@
 import { Sidebar } from './Sidebar.js'
 
-export async function AppShell(currentModule, activeKbId) {
+export async function AppShell(currentModule, activeKbId, personalExpanded) {
   return `
     <div id="record-view" class="hidden"></div>
     <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Open menu">
@@ -8,7 +8,7 @@ export async function AppShell(currentModule, activeKbId) {
     </button>
     <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
     <main class="app-shell" id="main-content">
-      ${await Sidebar(currentModule, activeKbId)}
+      ${await Sidebar(currentModule, activeKbId, personalExpanded)}
       <section class="main-panel">
         <div id="module-content">Loading...</div>
       </section>
