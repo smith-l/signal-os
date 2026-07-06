@@ -246,30 +246,54 @@ function renderTaskTimeline(tasks) {
     return `<div class="task-timeline-empty">Add due dates to tasks to see them plotted here.</div>`
   }
 
-  const dates = dated.map(t => parseDateOnly(t.due_date))
-  const minDate = new Date(Math.min(...dates))
-  const maxDate = new Date(Math.max(...dates))
+  const sorted = [...dated].sort((a, b) => a.due_date.localeCompare(b.due_date))
+  const allDates = sorted.map(t => parseDateOnly(t.due_date))
+  const minDate = new Date(Math.min(...allDates))
+  const maxDate = new Date(Math.max(...allDates))
   minDate.setDate(minDate.getDate() - 2)
   maxDate.setDate(maxDate.getDate() + 2)
   const totalDays = Math.max(daysBetweenDates(minDate, maxDate), 1)
   const pct = d => (daysBetweenDates(minDate, d) / totalDays) * 100
 
-  const markers = dated.map(t => `
-    <div class="task-timeline-marker ${TASK_DOT_CLASS[t.status] || ''} ${t.is_milestone ? 'task-timeline-flag' : ''}"
-         style="left:${pct(parseDateOnly(t.due_date))}%"
-         title="${t.title} — ${t.due_date} (${t.status})">
-      ${t.is_milestone ? '<i class="ti ti-flag-filled" aria-hidden="true"></i>' : ''}
-    </div>
+  // A few evenly spaced date ticks along the shared axis
+  const tickCount = 4
+  const ticks = Array.from({ length: tickCount + 1 }, (_, i) => {
+    const d = new Date(minDate)
+    d.setDate(d.getDate() + Math.round((totalDays / tickCount) * i))
+    return d
+  })
+
+  const axisTicks = ticks.map(d => `
+    <span class="task-gantt-tick" style="left:${pct(d)}%">${d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>
   `).join('')
 
-  return `
-    <div class="task-timeline">
-      <div class="task-timeline-axis"></div>
-      ${markers}
-      <div class="task-timeline-dates">
-        <span>${minDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>
-        <span>${maxDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>
+  const rows = sorted.map(t => {
+    const dotClass = TASK_DOT_CLASS[t.status] || ''
+    const left = pct(parseDateOnly(t.due_date))
+    return `
+      <div class="task-gantt-row">
+        <div class="task-gantt-label" title="${t.title}">
+          ${t.is_milestone ? '<i class="ti ti-flag-filled task-gantt-flag-icon" aria-hidden="true"></i>' : ''}
+          <span class="task-gantt-title">${t.title}</span>
+        </div>
+        <div class="task-gantt-track">
+          <div class="task-gantt-connector" style="width:${left}%"></div>
+          <div class="task-gantt-marker ${dotClass} ${t.is_milestone ? 'task-gantt-marker-flag' : ''}" style="left:${left}%">
+            ${t.is_milestone ? '<i class="ti ti-flag-filled" aria-hidden="true"></i>' : ''}
+          </div>
+          <span class="task-gantt-date" style="left:${left}%">${t.due_date}</span>
+        </div>
       </div>
+    `
+  }).join('')
+
+  return `
+    <div class="task-gantt">
+      <div class="task-gantt-axis-row">
+        <div class="task-gantt-label"></div>
+        <div class="task-gantt-track task-gantt-axis-track">${axisTicks}</div>
+      </div>
+      ${rows}
     </div>
   `
 }

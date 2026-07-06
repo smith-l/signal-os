@@ -134,7 +134,7 @@
   white-space: nowrap;
 }
 
-/* Per-project task timeline, shown below the task list */
+/* Per-project task Gantt — one row per task, shared date axis */
 .task-timeline-empty {
   margin-top: 20px;
   padding: 16px;
@@ -145,58 +145,115 @@
   border-radius: var(--radius-md);
 }
 
-.task-timeline {
-  position: relative;
+.task-gantt {
   margin-top: 24px;
-  padding: 24px 12px 20px;
-  height: 40px;
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
 }
 
-.task-timeline-axis {
+.task-gantt-axis-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.task-gantt-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+}
+
+.task-gantt-row + .task-gantt-row {
+  border-top: 1px solid rgba(255,255,255,.04);
+}
+
+.task-gantt-label {
+  width: 160px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ink-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.task-gantt-flag-icon {
+  color: var(--review);
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.task-gantt-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.task-gantt-track {
+  position: relative;
+  flex: 1;
+  height: 30px;
+  min-width: 300px;
+}
+
+.task-gantt-axis-track {
+  border-bottom: 1px solid var(--line);
+  height: 22px;
+}
+
+.task-gantt-tick {
   position: absolute;
-  left: 12px;
-  right: 12px;
-  top: 30px;
+  bottom: 4px;
+  transform: translateX(-50%);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+
+.task-gantt-connector {
+  position: absolute;
+  top: 12px;
+  left: 0;
   height: 2px;
   background: var(--line);
-  border-radius: 2px;
 }
 
-.task-timeline-marker {
+.task-gantt-marker {
   position: absolute;
-  top: 20px;
+  top: 8px;
   transform: translateX(-50%);
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: var(--unknown);
   border: 2px solid var(--bg);
-  cursor: default;
 }
 
-.task-timeline-marker.status-not-started   { background: var(--unknown); }
-.task-timeline-marker.status-active-stage  { background: var(--pass); }
-.task-timeline-marker.status-blocked-stage { background: var(--caution); }
-.task-timeline-marker.status-done-stage    { background: var(--teal); }
+.task-gantt-marker.status-not-started   { background: var(--unknown); }
+.task-gantt-marker.status-active-stage  { background: var(--pass); }
+.task-gantt-marker.status-blocked-stage { background: var(--caution); }
+.task-gantt-marker.status-done-stage    { background: var(--teal); }
 
-.task-timeline-marker.task-timeline-flag {
+.task-gantt-marker.task-gantt-marker-flag {
   width: auto;
   height: auto;
   background: none;
   border: none;
-  top: 12px;
+  top: 0px;
   color: var(--review);
-  font-size: 15px;
+  font-size: 14px;
 }
 
-.task-timeline-dates {
+.task-gantt-date {
   position: absolute;
-  left: 12px;
-  right: 12px;
-  top: 0;
-  display: flex;
-  justify-content: space-between;
-  font-size: 11px;
+  top: 20px;
+  transform: translateX(-50%);
+  font-size: 10px;
   color: var(--ink-faint);
-  font-weight: 700;
+  white-space: nowrap;
 }
