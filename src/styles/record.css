@@ -388,7 +388,7 @@
 }
 
 .markdown-body tr:last-child td { border-bottom: none; }
-.markdown-body tbody tr:nth-child(even) td { background: rgba(255,255,255,.04); }
+.markdown-body tbody tr:nth-child(even) td { background: var(--overlay-soft); }
 .markdown-body tbody tr:hover td { background: rgba(232,133,58,.05); }
 
 .markdown-body a {

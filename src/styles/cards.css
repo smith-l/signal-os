@@ -465,7 +465,7 @@
 }
 
 .playbook-detail-content tr:last-child td { border-bottom: none; }
-.playbook-detail-content tbody tr:nth-child(even) td { background: rgba(255,255,255,.03); }
+.playbook-detail-content tbody tr:nth-child(even) td { background: var(--overlay-soft); }
 
 .playbook-detail-content .doc-callout,
 .playbook-detail-content .callout {

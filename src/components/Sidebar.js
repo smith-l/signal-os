@@ -29,7 +29,7 @@ function kbButton(section, activeKbId) {
   `
 }
 
-export async function Sidebar(currentModule, activeKbId, personalManuallyExpanded) {
+export async function Sidebar(currentModule, activeKbId, personalManuallyExpanded, theme) {
   const kbSections = await getKbSections()
   const personalKb = kbSections.filter(s => PERSONAL_KB_TITLES.includes(s.section_title))
   const roleKb = kbSections.filter(s => !PERSONAL_KB_TITLES.includes(s.section_title))
@@ -41,8 +41,15 @@ export async function Sidebar(currentModule, activeKbId, personalManuallyExpande
 
   return `
     <aside class="sidebar">
-      <h1>Signal OS</h1>
-      <p class="version">Career Edition</p>
+      <div class="sidebar-header">
+        <div>
+          <h1>Signal OS</h1>
+          <p class="version">Career Edition</p>
+        </div>
+        <button data-theme-toggle class="theme-toggle" title="Toggle light/dark mode">
+          <i class="ti ${theme === 'light' ? 'ti-moon' : 'ti-sun'}" aria-hidden="true"></i>
+        </button>
+      </div>
       <nav>
         <button data-module="projects" class="${currentModule === 'projects' ? 'active' : ''}">
           <i class="ti ti-clipboard-list" aria-hidden="true"></i>

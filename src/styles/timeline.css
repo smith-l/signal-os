@@ -61,11 +61,11 @@
   align-items: center;
   gap: 16px;
   padding: 16px 12px;
-  border-bottom: 1px solid rgba(255,255,255,.04);
+  border-bottom: 1px solid var(--overlay-soft);
 }
 
 .timeline-row:nth-child(even) {
-  background: rgba(255,255,255,.025);
+  background: var(--overlay-faint);
 }
 
 .timeline-row-clickable {
@@ -75,7 +75,7 @@
 }
 
 .timeline-row-clickable:hover {
-  background: rgba(255,255,255,.05);
+  background: var(--overlay-medium);
 }
 
 .timeline-label {
@@ -217,7 +217,7 @@
 }
 
 .task-gantt-row + .task-gantt-row {
-  border-top: 1px solid rgba(255,255,255,.04);
+  border-top: 1px solid var(--overlay-soft);
 }
 
 .task-gantt-label {

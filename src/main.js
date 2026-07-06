@@ -37,6 +37,8 @@ let personalExpanded = false
 let projectsView = 'board'
 let draggedCardId = null
 let draggedEntityType = null
+let theme = localStorage.getItem('signal-os-theme') || 'dark'
+document.documentElement.setAttribute('data-theme', theme)
 
 // Registry mapping entity type -> its data service functions.
 // Board.js/RecordView.js never call these directly — only main.js's
@@ -214,7 +216,7 @@ function attachModuleHandlers() {
 }
 
 async function renderApp() {
-  document.querySelector('#app').innerHTML = await AppShell(currentModule, activeKbId, personalExpanded)
+  document.querySelector('#app').innerHTML = await AppShell(currentModule, activeKbId, personalExpanded, theme)
   document.querySelector('#module-content').innerHTML = await renderModule()
 
   // Mobile sidebar toggle
@@ -240,6 +242,13 @@ async function renderApp() {
       sidebarEl?.classList.remove('open')
       backdrop?.classList.remove('visible')
     })
+  })
+
+  document.querySelector('[data-theme-toggle]')?.addEventListener('click', async () => {
+    theme = theme === 'dark' ? 'light' : 'dark'
+    localStorage.setItem('signal-os-theme', theme)
+    document.documentElement.setAttribute('data-theme', theme)
+    await renderApp()
   })
 
   document.querySelector('[data-personal-toggle]')?.addEventListener('click', async () => {
