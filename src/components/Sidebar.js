@@ -1,9 +1,8 @@
-const NAV_ITEMS = [
-  { id: 'career',    label: 'Applications', icon: 'ti-briefcase' },
-  { id: 'projects',  label: 'Projects',      icon: 'ti-clipboard-list' },
-  { id: 'playbooks', label: 'Playbooks',    icon: 'ti-layout-grid' },
-  { id: 'knowledge', label: 'Knowledge Hub',icon: 'ti-database' },
-]
+// Knowledge base items that live in the Personal section instead of under
+// the Knowledge Hub accordion. Matched by title since that's the visible,
+// user-editable identifier — if one of these gets renamed later it'll need
+// updating here too.
+const PERSONAL_KB_TITLES = ['Core Behavioural Stories', 'The First 90 Days', 'Background Summary']
 
 let kbSectionsCache = null
 
@@ -19,56 +18,65 @@ async function getKbSections() {
   }
 }
 
+function kbButton(section, activeKbId) {
+  return `
+    <button
+      class="nav-subitem ${String(section.id) === String(activeKbId) ? 'active' : ''}"
+      data-kb-nav-id="${section.id}"
+    >
+      ${section.section_title}
+    </button>
+  `
+}
+
 export async function Sidebar(currentModule, activeKbId) {
-  const knowledgeExpanded = currentModule === 'knowledge'
-  const kbSections = knowledgeExpanded ? await getKbSections() : []
+  const kbSections = await getKbSections()
+  const personalKb = kbSections.filter(s => PERSONAL_KB_TITLES.includes(s.section_title))
+  const roleKb = kbSections.filter(s => !PERSONAL_KB_TITLES.includes(s.section_title))
+
+  const knowledgeActive = currentModule === 'knowledge'
 
   return `
     <aside class="sidebar">
       <h1>Signal OS</h1>
       <p class="version">Career Edition</p>
       <nav>
-        ${NAV_ITEMS.map(item => {
-          const isKnowledge = item.id === 'knowledge'
-          const isActive = currentModule === item.id
+        <p class="nav-section-label">Personal</p>
 
-          if (!isKnowledge) {
-            return `
-              <button
-                data-module="${item.id}"
-                class="${isActive ? 'active' : ''}"
-              >
-                <i class="ti ${item.icon}" aria-hidden="true"></i>
-                ${item.label}
-              </button>
-            `
-          }
+        <button data-module="career" class="${currentModule === 'career' ? 'active' : ''}">
+          <i class="ti ti-briefcase" aria-hidden="true"></i>
+          Applications
+        </button>
 
-          return `
-            <div class="nav-group">
-              <button
-                data-module="${item.id}"
-                class="${isActive ? 'active' : ''} nav-group-toggle"
-              >
-                <i class="ti ${item.icon}" aria-hidden="true"></i>
-                ${item.label}
-                <i class="ti ti-chevron-down nav-chevron ${isActive ? 'expanded' : ''}" aria-hidden="true"></i>
-              </button>
-              ${isActive ? `
-                <div class="nav-subitems">
-                  ${kbSections.map(s => `
-                    <button
-                      class="nav-subitem ${String(s.id) === String(activeKbId) ? 'active' : ''}"
-                      data-kb-nav-id="${s.id}"
-                    >
-                      ${s.section_title}
-                    </button>
-                  `).join('')}
-                </div>
-              ` : ''}
+        ${personalKb.map(s => kbButton(s, activeKbId)).join('')}
+
+        <p class="nav-section-label">Role</p>
+
+        <button data-module="projects" class="${currentModule === 'projects' ? 'active' : ''}">
+          <i class="ti ti-clipboard-list" aria-hidden="true"></i>
+          Projects
+        </button>
+
+        <button data-module="playbooks" class="${currentModule === 'playbooks' ? 'active' : ''}">
+          <i class="ti ti-layout-grid" aria-hidden="true"></i>
+          Playbooks
+        </button>
+
+        <div class="nav-group">
+          <button
+            data-module="knowledge"
+            class="${knowledgeActive ? 'active' : ''} nav-group-toggle"
+          >
+            <i class="ti ti-database" aria-hidden="true"></i>
+            Knowledge Hub
+            <i class="ti ti-chevron-down nav-chevron ${knowledgeActive ? 'expanded' : ''}" aria-hidden="true"></i>
+          </button>
+          ${knowledgeActive ? `
+            <div class="nav-subitems">
+              ${roleKb.map(s => kbButton(s, activeKbId)).join('')}
             </div>
-          `
-        }).join('')}
+          ` : ''}
+        </div>
       </nav>
     </aside>
   `

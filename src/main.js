@@ -126,10 +126,12 @@ function attachModuleHandlers() {
     })
   }
 
-  // Sidebar nested KB nav — section click
+  // Sidebar nested KB nav — section click (now used both by the always-visible
+  // Personal KB buttons and the Knowledge Hub accordion's subitems)
   document.querySelectorAll('[data-kb-nav-id]').forEach(btn => {
     btn.addEventListener('click', async () => {
       activeKbId = btn.dataset.kbNavId
+      currentModule = 'knowledge'
       await renderApp()
     })
   })
