@@ -171,6 +171,15 @@ function attachModuleHandlers() {
     })
   })
 
+  // Timeline rows -> open record view (Projects timeline currently; entity type fixed to project
+  // since only Projects has a Timeline view today)
+  document.querySelectorAll('.timeline-row-clickable[data-project-id]').forEach(row => {
+    row.addEventListener('click', async () => {
+      const records = await getProjects()
+      await openRecordView(row.dataset.projectId, records, renderApp, entityConfigs.project)
+    })
+  })
+
   document.querySelectorAll('.draggable-card').forEach(card => {
     card.addEventListener('dragstart', () => {
       draggedCardId = card.dataset.id

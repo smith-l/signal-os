@@ -56,7 +56,7 @@ export function Timeline(projects, tasksByProject, config) {
       `).join('')
 
     return `
-      <div class="timeline-row">
+      <div class="timeline-row timeline-row-clickable" data-project-id="${p.id}">
         <div class="timeline-label">
           <span class="timeline-title">${p[config.titleField]}</span>
           <span class="timeline-stage ${stageClass}">${p.stage}</span>
