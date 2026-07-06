@@ -44,28 +44,6 @@ export async function Sidebar(currentModule, activeKbId, personalManuallyExpande
       <h1>Signal OS</h1>
       <p class="version">Career Edition</p>
       <nav>
-        <div class="nav-group">
-          <button
-            data-personal-toggle
-            class="${insidePersonal ? 'active' : ''} nav-group-toggle"
-          >
-            <i class="ti ti-user" aria-hidden="true"></i>
-            Personal
-            <i class="ti ti-chevron-down nav-chevron ${personalExpanded ? 'expanded' : ''}" aria-hidden="true"></i>
-          </button>
-          ${personalExpanded ? `
-            <div class="nav-subitems">
-              <button
-                data-module="career"
-                class="nav-subitem ${currentModule === 'career' ? 'active' : ''}"
-              >
-                Applications
-              </button>
-              ${personalKb.map(s => kbButton(s, activeKbId)).join('')}
-            </div>
-          ` : ''}
-        </div>
-
         <button data-module="projects" class="${currentModule === 'projects' ? 'active' : ''}">
           <i class="ti ti-clipboard-list" aria-hidden="true"></i>
           Projects
@@ -88,6 +66,28 @@ export async function Sidebar(currentModule, activeKbId, personalManuallyExpande
           ${knowledgeActive ? `
             <div class="nav-subitems">
               ${roleKb.map(s => kbButton(s, activeKbId)).join('')}
+            </div>
+          ` : ''}
+        </div>
+
+        <div class="nav-group">
+          <button
+            data-personal-toggle
+            class="${insidePersonal ? 'active' : ''} nav-group-toggle"
+          >
+            <i class="ti ti-user" aria-hidden="true"></i>
+            Personal
+            <i class="ti ti-chevron-down nav-chevron ${personalExpanded ? 'expanded' : ''}" aria-hidden="true"></i>
+          </button>
+          ${personalExpanded ? `
+            <div class="nav-subitems">
+              <button
+                data-module="career"
+                class="nav-subitem ${currentModule === 'career' ? 'active' : ''}"
+              >
+                Applications
+              </button>
+              ${personalKb.map(s => kbButton(s, activeKbId)).join('')}
             </div>
           ` : ''}
         </div>
