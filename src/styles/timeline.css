@@ -60,8 +60,12 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 16px 0;
+  padding: 16px 12px;
   border-bottom: 1px solid rgba(255,255,255,.04);
+}
+
+.timeline-row:nth-child(even) {
+  background: rgba(255,255,255,.025);
 }
 
 .timeline-row-clickable {
@@ -71,7 +75,7 @@
 }
 
 .timeline-row-clickable:hover {
-  background: rgba(255,255,255,.02);
+  background: rgba(255,255,255,.05);
 }
 
 .timeline-label {
@@ -113,20 +117,15 @@
   height: 16px;
   background: var(--accent);
   border-radius: 999px;
-  opacity: .9;
+  opacity: .85;
   cursor: pointer;
-  transition: opacity .15s ease;
 }
 
-.timeline-row-clickable:hover .timeline-bar {
-  opacity: 1;
-}
-
-.timeline-bar.status-not-started   { background: linear-gradient(90deg, var(--unknown), rgba(118,127,145,.55)); }
-.timeline-bar.status-in-planning   { background: linear-gradient(90deg, var(--accent), rgba(232,133,58,.55)); }
-.timeline-bar.status-active-stage  { background: linear-gradient(90deg, var(--pass), rgba(130,199,127,.55)); }
-.timeline-bar.status-blocked-stage { background: linear-gradient(90deg, var(--caution), rgba(228,111,111,.55)); }
-.timeline-bar.status-done-stage    { background: linear-gradient(90deg, var(--teal), rgba(94,190,178,.55)); }
+.timeline-bar.status-not-started   { background: var(--unknown); }
+.timeline-bar.status-in-planning   { background: var(--accent); }
+.timeline-bar.status-active-stage  { background: var(--pass); }
+.timeline-bar.status-blocked-stage { background: var(--caution); }
+.timeline-bar.status-done-stage    { background: var(--teal); }
 
 .timeline-bar-date {
   position: absolute;
