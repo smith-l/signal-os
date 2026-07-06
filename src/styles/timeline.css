@@ -60,7 +60,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 10px 0;
+  padding: 16px 0;
   border-bottom: 1px solid rgba(255,255,255,.04);
 }
 
@@ -93,13 +93,13 @@
 .timeline-track {
   position: relative;
   flex: 1;
-  height: 58px;
+  height: 80px;
   min-width: 400px;
 }
 
 .timeline-bar {
   position: absolute;
-  top: 24px;
+  top: 38px;
   height: 16px;
   background: var(--accent);
   border-radius: 999px;
@@ -108,7 +108,7 @@
 
 .timeline-bar-date {
   position: absolute;
-  top: 20px;
+  top: 60px;
   font-size: 10px;
   font-weight: 700;
   color: var(--ink-faint);
@@ -142,7 +142,7 @@
   max-width: 90px;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-top: 1px;
+  margin-top: 2px;
 }
 
 /* Task panel milestone indicator */
