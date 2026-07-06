@@ -724,6 +724,11 @@ tr.story-row-active td {
   padding: 3px 8px;
 }
 
+.task-status-select.status-not-started   { border-color: rgba(118,127,145,.4); color: var(--unknown); }
+.task-status-select.status-active-stage  { border-color: rgba(130,199,127,.4); color: var(--pass); }
+.task-status-select.status-blocked-stage { border-color: rgba(228,111,111,.4); color: var(--caution); }
+.task-status-select.status-done-stage    { border-color: rgba(94,190,178,.4); color: var(--teal); }
+
 .task-delete-btn {
   background: transparent;
   border: none;

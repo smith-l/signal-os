@@ -225,8 +225,63 @@ function renderRecordHeader(record, config) {
   `
 }
 
+function parseDateOnly(d) {
+  return d ? new Date(d + 'T00:00:00') : null
+}
+
+function daysBetweenDates(a, b) {
+  return Math.round((b - a) / (1000 * 60 * 60 * 24))
+}
+
+const TASK_DOT_CLASS = {
+  'Backlog': 'status-not-started',
+  'Active': 'status-active-stage',
+  'Blocked': 'status-blocked-stage',
+  'Done': 'status-done-stage',
+}
+
+function renderTaskTimeline(tasks) {
+  const dated = tasks.filter(t => t.due_date)
+  if (dated.length === 0) {
+    return `<div class="task-timeline-empty">Add due dates to tasks to see them plotted here.</div>`
+  }
+
+  const dates = dated.map(t => parseDateOnly(t.due_date))
+  const minDate = new Date(Math.min(...dates))
+  const maxDate = new Date(Math.max(...dates))
+  minDate.setDate(minDate.getDate() - 2)
+  maxDate.setDate(maxDate.getDate() + 2)
+  const totalDays = Math.max(daysBetweenDates(minDate, maxDate), 1)
+  const pct = d => (daysBetweenDates(minDate, d) / totalDays) * 100
+
+  const markers = dated.map(t => `
+    <div class="task-timeline-marker ${TASK_DOT_CLASS[t.status] || ''} ${t.is_milestone ? 'task-timeline-flag' : ''}"
+         style="left:${pct(parseDateOnly(t.due_date))}%"
+         title="${t.title} — ${t.due_date} (${t.status})">
+      ${t.is_milestone ? '<i class="ti ti-flag-filled" aria-hidden="true"></i>' : ''}
+    </div>
+  `).join('')
+
+  return `
+    <div class="task-timeline">
+      <div class="task-timeline-axis"></div>
+      ${markers}
+      <div class="task-timeline-dates">
+        <span>${minDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>
+        <span>${maxDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>
+      </div>
+    </div>
+  `
+}
+
 function renderTaskPanel(tasks, recordId) {
   const statuses = ['Backlog', 'Active', 'Blocked', 'Done']
+  const taskStatusClass = {
+    'Backlog': 'status-not-started',
+    'Active': 'status-active-stage',
+    'Blocked': 'status-blocked-stage',
+    'Done': 'status-done-stage',
+  }
   const sorted = [...tasks].sort((a, b) => {
     if (!a.due_date && !b.due_date) return 0
     if (!a.due_date) return 1
@@ -239,7 +294,7 @@ function renderTaskPanel(tasks, recordId) {
       ${t.is_milestone ? '<i class="ti ti-flag-filled task-milestone-icon" aria-hidden="true" title="Milestone"></i>' : ''}
       <span class="task-title">${t.title}</span>
       <input type="date" class="task-due-input" data-task-id="${t.id}" value="${t.due_date || ''}" />
-      <select class="task-status-select" data-task-id="${t.id}">
+      <select class="task-status-select ${taskStatusClass[t.status] || ''}" data-task-id="${t.id}">
         ${statuses.map(s => `<option value="${s}" ${t.status === s ? 'selected' : ''}>${s}</option>`).join('')}
       </select>
       <button class="task-delete-btn" data-task-id="${t.id}" title="Delete">
@@ -264,6 +319,8 @@ function renderTaskPanel(tasks, recordId) {
         </label>
         <button id="add-task-btn" data-record-id="${recordId}">+ Add</button>
       </div>
+
+      ${renderTaskTimeline(tasks)}
     </div>
   `
 }
