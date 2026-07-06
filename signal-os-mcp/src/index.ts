@@ -530,28 +530,6 @@ export class MyMCP extends McpAgent<Env> {
       }
     );
 
-    // ── CREATE PROJECT PREP SECTION ──────────────────────────────────────
-    this.server.registerTool(
-      "create_project_prep_section",
-      {
-        description: "Create a new custom prep/content section for a project. Mirrors create_prep_section but for projects.",
-        inputSchema: {
-          project_id: z.number(),
-          section_key: z.string().describe("Short machine key, e.g. 'stakeholder_map'"),
-          section_title: z.string().describe("Display title, e.g. 'Stakeholder Map'"),
-          content: z.string().optional(),
-          sort_order: z.number().optional(),
-        }
-      },
-      async ({ project_id, section_key, section_title, content, sort_order }) => {
-        const result = await this.env.signal_os_db
-          .prepare("INSERT INTO project_prep (project_id, section_key, section_title, content, sort_order) VALUES (?, ?, ?, ?, ?)")
-          .bind(project_id, section_key, section_title, content || "", sort_order || 0)
-          .run();
-        return { content: [{ type: "text", text: `Created section '${section_title}' (ID ${result.meta.last_row_id}) on project ${project_id}.` }] };
-      }
-    );
-
     // ── UPDATE PROJECT PREP SECTION ───────────────────────────────────────
     this.server.registerTool(
       "update_project_prep_section",
