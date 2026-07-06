@@ -106,6 +106,12 @@
   opacity: .85;
 }
 
+.timeline-bar.status-not-started   { background: var(--unknown); }
+.timeline-bar.status-in-planning   { background: var(--accent); }
+.timeline-bar.status-active-stage  { background: var(--pass); }
+.timeline-bar.status-blocked-stage { background: var(--caution); }
+.timeline-bar.status-done-stage    { background: var(--teal); }
+
 .timeline-bar-date {
   position: absolute;
   top: 60px;

@@ -49,7 +49,7 @@ export function Timeline(projects, tasksByProject, config) {
     const milestones = (tasksByProject[p.id] || [])
       .filter(t => t.is_milestone && t.due_date)
       .map(t => `
-        <div class="timeline-milestone" style="left:${pct(parseDate(t.due_date))}%" title="${t.title} — ${formatDisplayDate(t.due_date)}">
+        <div class="timeline-milestone" style="left:${pct(parseDate(t.due_date))}%">
           <i class="ti ti-flag-filled" aria-hidden="true"></i>
           <span class="timeline-milestone-label">${t.title}</span>
         </div>
@@ -62,7 +62,7 @@ export function Timeline(projects, tasksByProject, config) {
           <span class="timeline-stage ${stageClass}">${p.stage}</span>
         </div>
         <div class="timeline-track">
-          <div class="timeline-bar" style="left:${left}%; width:${width}%">
+          <div class="timeline-bar ${stageClass}" style="left:${left}%; width:${width}%">
             ${p.start_date ? `<span class="timeline-bar-date timeline-bar-date-start">${formatDisplayDate(p.start_date)}</span>` : ''}
             ${p.target_end_date ? `<span class="timeline-bar-date timeline-bar-date-end">${formatDisplayDate(p.target_end_date)}</span>` : ''}
           </div>
