@@ -45,6 +45,7 @@ export function Timeline(projects, tasksByProject, config) {
       .map(t => `
         <div class="timeline-milestone" style="left:${pct(parseDate(t.due_date))}%" title="${t.title} — ${t.due_date}">
           <i class="ti ti-flag-filled" aria-hidden="true"></i>
+          <span class="timeline-milestone-label">${t.title}</span>
         </div>
       `).join('')
 
@@ -55,7 +56,10 @@ export function Timeline(projects, tasksByProject, config) {
           <span class="timeline-stage ${stageClass}">${p.stage}</span>
         </div>
         <div class="timeline-track">
-          <div class="timeline-bar" style="left:${left}%; width:${width}%"></div>
+          <div class="timeline-bar" style="left:${left}%; width:${width}%">
+            ${p.start_date ? `<span class="timeline-bar-date timeline-bar-date-start">${p.start_date}</span>` : ''}
+            ${p.target_end_date ? `<span class="timeline-bar-date timeline-bar-date-end">${p.target_end_date}</span>` : ''}
+          </div>
           ${milestones}
         </div>
       </div>
