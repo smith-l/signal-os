@@ -31,7 +31,7 @@ import { entityConfigs } from './config/entityConfigs.js'
 window.__openPlaybook = openPlaybook
 window.__closePlaybook = closePlaybook
 
-let currentModule = 'career'
+let currentModule = 'projects'
 let activeKbId = null
 let personalExpanded = false
 let projectsView = 'board'
