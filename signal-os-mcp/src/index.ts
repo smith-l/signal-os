@@ -529,25 +529,6 @@ export class MyMCP extends McpAgent<Env> {
         return { content: [{ type: "text", text: `Updated project_prep section ${id}. ${content.length} characters written.` }] };
       }
     );
-
-    // ── UPDATE PROJECT PREP SECTION ───────────────────────────────────────
-    this.server.registerTool(
-      "update_project_prep_section",
-      {
-        description: "Write or update content in a prep section for a project. Mirrors update_prep_section but for projects.",
-        inputSchema: {
-          id: z.number().describe("The project_prep section ID (not the project ID)"),
-          content: z.string(),
-        }
-      },
-      async ({ id, content }) => {
-        await this.env.signal_os_db
-          .prepare("UPDATE project_prep SET content = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
-          .bind(content, id)
-          .run();
-        return { content: [{ type: "text", text: `Updated project_prep section ${id}. ${content.length} characters written.` }] };
-      }
-    );
   }
 }
 
