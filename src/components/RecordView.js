@@ -222,6 +222,22 @@ function renderRecordHeader(record, config) {
         </button>
       </div>
     </div>
+    ${(record.next_action || record.notes) ? `
+      <div class="record-callouts">
+        ${record.next_action ? `
+          <div class="record-callout record-callout-action">
+            <p class="record-callout-label"><i class="ti ti-arrow-right" aria-hidden="true"></i> Next Action</p>
+            <p class="record-callout-body">${record.next_action}</p>
+          </div>
+        ` : ''}
+        ${record.notes ? `
+          <div class="record-callout record-callout-notes">
+            <p class="record-callout-label"><i class="ti ti-notes" aria-hidden="true"></i> Notes</p>
+            <p class="record-callout-body">${record.notes}</p>
+          </div>
+        ` : ''}
+      </div>
+    ` : ''}
   `
 }
 
