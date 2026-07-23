@@ -528,6 +528,155 @@ export class MyMCP extends McpAgent<Env> {
           .run();
         return { content: [{ type: "text", text: `Updated project_prep section ${id}. ${content.length} characters written.` }] };
       }
+    );// ── GET PEOPLE ────────────────────────────────────────────────────
+    this.server.registerTool(
+      "get_people",
+      {
+        description: "Get team members from the Signal OS people tracker. Optionally filter by support_stage.",
+        inputSchema: {
+          support_stage: z.string().optional().describe("Filter by stage, e.g. 'Thriving', 'Steady', 'Needs Support', 'At Risk'. Omit for all."),
+        }
+      },
+      async ({ support_stage }) => {
+        let query = "SELECT * FROM people";
+        const binds: any[] = [];
+        if (support_stage) { query += " WHERE support_stage = ?"; binds.push(support_stage); }
+        query += " ORDER BY updated_at DESC";
+        const { results } = await this.env.signal_os_db.prepare(query).bind(...binds).all();
+        return { content: [{ type: "text", text: JSON.stringify(results, null, 2) }] };
+      }
+    );
+
+    // ── CREATE PERSON ─────────────────────────────────────────────────
+    this.server.registerTool(
+      "create_person",
+      {
+        description: "Add a new team member to the Signal OS people tracker. Auto-seeds the standard section template (Role & Background, Strengths, Aspirations, 1:1 Notes Log).",
+        inputSchema: {
+          name: z.string().describe("Team member's name"),
+          role: z.string().optional().describe("Their role, e.g. 'Senior SE'"),
+          support_stage: z.enum(["Thriving", "Steady", "Needs Support", "At Risk"]).optional().describe("Defaults to 'Steady'."),
+          next_action: z.string().optional(),
+          notes: z.string().optional().describe("High-level summary — richer content goes in the prep sections, not here"),
+        }
+      },
+      async ({ name, role, support_stage, next_action, notes }) => {
+        const result = await this.env.signal_os_db
+          .prepare("INSERT INTO people (name, role, support_stage, next_action, notes) VALUES (?, ?, ?, ?, ?)")
+          .bind(name, role || "", support_stage || "Steady", next_action || "", notes || "")
+          .run();
+        const personId = result.meta.last_row_id;
+
+        const defaultSections = [
+          { key: "role_background", title: "Role & Background", order: 1, content: "" },
+          { key: "strengths", title: "Strengths", order: 2, content: "" },
+          { key: "aspirations", title: "Aspirations", order: 3, content: "" },
+          { key: "notes_log", title: "1:1 Notes Log", order: 4, content: "" },
+        ];
+        for (const s of defaultSections) {
+          await this.env.signal_os_db
+            .prepare("INSERT INTO people_prep (person_id, section_key, section_title, content, sort_order) VALUES (?, ?, ?, ?, ?)")
+            .bind(personId, s.key, s.title, s.content, s.order)
+            .run();
+        }
+
+        return { content: [{ type: "text", text: `Added '${name}' (ID ${personId}) with the standard section template. Status: ${support_stage || "Steady"}.` }] };
+      }
+    );
+
+    // ── UPDATE PERSON ─────────────────────────────────────────────────
+    this.server.registerTool(
+      "update_person",
+      {
+        description: "Update fields on a team member. Provide person_id and any fields to change — commonly support_stage, to reflect where they are now.",
+        inputSchema: {
+          person_id: z.number(),
+          name: z.string().optional(),
+          role: z.string().optional(),
+          support_stage: z.enum(["Thriving", "Steady", "Needs Support", "At Risk"]).optional(),
+          next_action: z.string().optional(),
+          notes: z.string().optional(),
+        }
+      },
+      async ({ person_id, ...fields }) => {
+        const allowed = ["name", "role", "support_stage", "next_action", "notes"];
+        const updates = Object.entries(fields).filter(([k, v]) => allowed.includes(k) && v !== undefined);
+        if (updates.length === 0) {
+          return { content: [{ type: "text", text: "No valid fields to update." }] };
+        }
+        const setClauses = updates.map(([k]) => `${k} = ?`).join(", ");
+        const values = updates.map(([, v]) => v);
+        await this.env.signal_os_db
+          .prepare(`UPDATE people SET ${setClauses}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`)
+          .bind(...values, person_id)
+          .run();
+        const person = await this.env.signal_os_db
+          .prepare("SELECT name, support_stage FROM people WHERE id = ?")
+          .bind(person_id)
+          .first() as any;
+        return { content: [{ type: "text", text: `Updated ${person_id} (${person?.name}). Status: ${person?.support_stage}.` }] };
+      }
+    );
+
+    // ── GET PEOPLE PREP SECTIONS ────────────────────────────────────────
+    this.server.registerTool(
+      "get_people_prep",
+      {
+        description: "Get prep/content sections for a team member. Mirrors get_project_prep but for people.",
+        inputSchema: {
+          person_id: z.number(),
+          section_key: z.string().optional().describe("Optional: get a specific section only. Omit to get all sections."),
+        }
+      },
+      async ({ person_id, section_key }) => {
+        let query = "SELECT * FROM people_prep WHERE person_id = ?";
+        const binds: any[] = [person_id];
+        if (section_key) { query += " AND section_key = ?"; binds.push(section_key); }
+        query += " ORDER BY sort_order ASC";
+        const { results } = await this.env.signal_os_db.prepare(query).bind(...binds).all();
+        return { content: [{ type: "text", text: JSON.stringify(results, null, 2) }] };
+      }
+    );
+
+    // ── CREATE PEOPLE PREP SECTION ──────────────────────────────────────
+    this.server.registerTool(
+      "create_people_prep_section",
+      {
+        description: "Create a new custom prep/content section for a team member. Mirrors create_project_prep_section.",
+        inputSchema: {
+          person_id: z.number(),
+          section_key: z.string().describe("Short machine key, e.g. 'career_conversation_jul26'"),
+          section_title: z.string().describe("Display title"),
+          content: z.string().optional(),
+          sort_order: z.number().optional(),
+        }
+      },
+      async ({ person_id, section_key, section_title, content, sort_order }) => {
+        const result = await this.env.signal_os_db
+          .prepare("INSERT INTO people_prep (person_id, section_key, section_title, content, sort_order) VALUES (?, ?, ?, ?, ?)")
+          .bind(person_id, section_key, section_title, content || "", sort_order || 0)
+          .run();
+        return { content: [{ type: "text", text: `Created section '${section_title}' (ID ${result.meta.last_row_id}) on person ${person_id}.` }] };
+      }
+    );
+
+    // ── UPDATE PEOPLE PREP SECTION ───────────────────────────────────────
+    this.server.registerTool(
+      "update_people_prep_section",
+      {
+        description: "Write or update content in a prep section for a team member. Mirrors update_project_prep_section.",
+        inputSchema: {
+          id: z.number().describe("The people_prep section ID (not the person ID)"),
+          content: z.string(),
+        }
+      },
+      async ({ id, content }) => {
+        await this.env.signal_os_db
+          .prepare("UPDATE people_prep SET content = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
+          .bind(content, id)
+          .run();
+        return { content: [{ type: "text", text: `Updated people_prep section ${id}. ${content.length} characters written.` }] };
+      }
     );
   }
 }

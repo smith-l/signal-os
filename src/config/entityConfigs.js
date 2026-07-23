@@ -144,7 +144,66 @@ Current content: ${section.content || ''}
 Respond with the COMPLETE updated section in markdown — preserve all existing content and add or update only what the user has asked for. Do not remove anything unless explicitly asked to. No preamble or explanation.`,
 }
 
+export const personConfig = {
+  typeKey: 'person',
+  label: 'Team Member',
+  apiBase: '/api/people',
+  prepApiBase: '/api/people-prep',
+  prepIdParam: 'person_id',
+  aiApiBase: '/api/person-ai',
+  idParam: 'person_id',
+
+  stages: ['Thriving', 'Steady', 'Needs Support', 'At Risk'],
+  stageField: 'support_stage',
+  activeStages: ['Thriving', 'Steady', 'Needs Support', 'At Risk'],
+
+  stageClassMap: {
+    'Thriving': 'support-thriving',
+    'Steady': 'support-steady',
+    'Needs Support': 'support-needs-support',
+    'At Risk': 'support-at-risk',
+  },
+
+  titleField: 'name',
+  subtitleField: 'role',
+
+  badge: null,
+
+  cardFields: [
+    { key: 'next_action' },
+  ],
+
+  editFields: [
+    { key: 'name', label: 'Name', type: 'text' },
+    { key: 'role', label: 'Role', type: 'text' },
+    { key: 'support_stage', label: 'Status', type: 'select', options: ['Thriving', 'Steady', 'Needs Support', 'At Risk'] },
+    { key: 'next_action', label: 'Next Action', type: 'textarea' },
+    { key: 'notes', label: 'Notes', type: 'textarea' },
+  ],
+
+  quickLinks: [],
+
+  enableStoryBank: false,
+  enableTasks: false,
+
+  defaultSections: [
+    { section_key: 'role_background', section_title: 'Role & Background', sort_order: 1 },
+    { section_key: 'strengths', section_title: 'Strengths', sort_order: 2 },
+    { section_key: 'aspirations', section_title: 'Aspirations', sort_order: 3 },
+    { section_key: 'notes_log', section_title: '1:1 Notes Log', sort_order: 4 },
+  ],
+
+  aiSystemPrompt: (record, section) =>
+    `You are helping Lee Smith, a Senior Solutions Engineering leader, organize and develop coaching notes about a member of his team, ${record.name} (${record.role || 'role not set'}).
+
+Section: ${section.section_title}
+Current content: ${section.content || ''}
+
+Keep the tone factual, specific, and development-focused — the kind of notes that would be entirely fair for this person to read themselves. Avoid vague judgments; prefer concrete, dated observations. Respond with the COMPLETE updated section in markdown — preserve all existing content and add or update only what's been asked for. No preamble or explanation.`,
+}
+
 export const entityConfigs = {
   application: applicationConfig,
   project: projectConfig,
+  person: personConfig,
 }

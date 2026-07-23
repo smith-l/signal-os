@@ -56,6 +56,11 @@ export async function Sidebar(currentModule, activeKbId, personalManuallyExpande
           Projects
         </button>
 
+        <button data-module="people" class="${currentModule === 'people' ? 'active' : ''}">
+          <i class="ti ti-users" aria-hidden="true"></i>
+          Team
+        </button>
+
         <button data-module="playbooks" class="${currentModule === 'playbooks' ? 'active' : ''}">
           <i class="ti ti-layout-grid" aria-hidden="true"></i>
           Playbooks

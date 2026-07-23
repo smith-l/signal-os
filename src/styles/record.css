@@ -520,6 +520,12 @@
 .status-blocked-stage { background: rgba(228,111,111,.15); color: var(--caution); }
 .status-done-stage    { background: var(--teal-soft); color: var(--teal); }
 
+/* Team member support-status badges — same palette, coaching-stage vocabulary */
+.support-thriving      { background: var(--pass-bg); color: var(--pass); }
+.support-steady        { background: var(--accent-soft); color: var(--accent-text); }
+.support-needs-support { background: var(--review-bg); color: var(--review); }
+.support-at-risk       { background: rgba(228,111,111,.15); color: var(--caution); }
+
 /* Section nav active */
 .section-nav-btn.active {
   background: var(--accent);

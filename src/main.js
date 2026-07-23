@@ -3,6 +3,7 @@ import './style.css'
 import { Applications } from './modules/career/Applications.js'
 import { Playbooks, openPlaybook, closePlaybook } from './modules/playbooks/Playbooks.js'
 import { Projects } from './modules/projects/Projects.js'
+import { People } from './modules/people/People.js'
 import { KnowledgeHub, attachKnowledgeHandlers } from './modules/knowledge/KnowledgeHub.js'
 
 import {
@@ -16,6 +17,12 @@ import {
   updateProject,
   createProject
 } from './services/projectService.js'
+
+import {
+  getPeople,
+  updatePerson,
+  createPerson
+} from './services/personService.js'
 
 import {
   openRecordView
@@ -46,12 +53,14 @@ document.documentElement.setAttribute('data-theme', theme)
 const entityServices = {
   application: { getAll: getApplications, update: updateApplication, create: createApplication, apiBase: '/api/applications' },
   project: { getAll: getProjects, update: updateProject, create: createProject, apiBase: '/api/projects' },
+  person: { getAll: getPeople, update: updatePerson, create: createPerson, apiBase: '/api/people' },
 }
 
 async function renderModule() {
   if (currentModule === 'career') return await Applications()
   if (currentModule === 'playbooks') return await Playbooks()
   if (currentModule === 'projects') return await Projects(projectsView)
+  if (currentModule === 'people') return await People()
   if (currentModule === 'knowledge') return await KnowledgeHub(activeKbId)
   return await Applications()
 }
@@ -118,6 +127,26 @@ function attachModuleHandlers() {
       const category = document.querySelector('#project-category').value
       if (!title) { alert('Please enter a project title'); return }
       await createProject({ title, category, stage: 'Not Started' })
+      await renderApp()
+    })
+  }
+
+  // People module — add form
+  const addPersonButton = document.querySelector('#add-person-btn')
+  const savePersonButton = document.querySelector('#save-person')
+
+  if (addPersonButton) {
+    addPersonButton.addEventListener('click', () => {
+      document.querySelector('#person-form').style.display = 'block'
+    })
+  }
+
+  if (savePersonButton) {
+    savePersonButton.addEventListener('click', async () => {
+      const name = document.querySelector('#person-name').value
+      const role = document.querySelector('#person-role').value
+      if (!name) { alert('Please enter a name'); return }
+      await createPerson({ name, role, support_stage: 'Steady' })
       await renderApp()
     })
   }
