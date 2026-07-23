@@ -677,6 +677,49 @@ export class MyMCP extends McpAgent<Env> {
           .run();
         return { content: [{ type: "text", text: `Updated people_prep section ${id}. ${content.length} characters written.` }] };
       }
+    );// ── DELETE PREP SECTION (application) ────────────────────────────────
+    this.server.registerTool(
+      "delete_prep_section",
+      {
+        description: "Delete a prep section from a job application. Cannot be undone.",
+        inputSchema: {
+          id: z.number().describe("The role_prep section ID (not the application ID)"),
+        }
+      },
+      async ({ id }) => {
+        await this.env.signal_os_db.prepare("DELETE FROM role_prep WHERE id = ?").bind(id).run();
+        return { content: [{ type: "text", text: `Deleted role_prep section ${id}.` }] };
+      }
+    );
+
+    // ── DELETE PROJECT PREP SECTION ──────────────────────────────────────
+    this.server.registerTool(
+      "delete_project_prep_section",
+      {
+        description: "Delete a prep section from a project. Cannot be undone.",
+        inputSchema: {
+          id: z.number().describe("The project_prep section ID (not the project ID)"),
+        }
+      },
+      async ({ id }) => {
+        await this.env.signal_os_db.prepare("DELETE FROM project_prep WHERE id = ?").bind(id).run();
+        return { content: [{ type: "text", text: `Deleted project_prep section ${id}.` }] };
+      }
+    );
+
+    // ── DELETE PEOPLE PREP SECTION ───────────────────────────────────────
+    this.server.registerTool(
+      "delete_people_prep_section",
+      {
+        description: "Delete a prep section from a team member's record. Cannot be undone.",
+        inputSchema: {
+          id: z.number().describe("The people_prep section ID (not the person ID)"),
+        }
+      },
+      async ({ id }) => {
+        await this.env.signal_os_db.prepare("DELETE FROM people_prep WHERE id = ?").bind(id).run();
+        return { content: [{ type: "text", text: `Deleted people_prep section ${id}.` }] };
+      }
     );
   }
 }

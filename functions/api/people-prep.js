@@ -27,3 +27,14 @@ export async function onRequestPut(context) {
     .run()
   return Response.json({ success: true })
 }
+
+export async function onRequestDelete(context) {
+  const url = new URL(context.request.url)
+  const id = url.searchParams.get('id')
+  if (!id) return Response.json({ error: 'id required' }, { status: 400 })
+  await context.env.signal_os_db
+    .prepare('DELETE FROM people_prep WHERE id = ?')
+    .bind(id)
+    .run()
+  return Response.json({ success: true })
+}

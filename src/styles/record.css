@@ -309,6 +309,85 @@
   border-color: var(--accent);
 }
 
+.prep-section-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.delete-section-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  width: 30px;
+  height: 30px;
+  color: var(--ink-faint);
+  cursor: pointer;
+  transition: all .14s ease;
+}
+
+.delete-section-btn:hover {
+  background: rgba(228,111,111,.1);
+  border-color: var(--caution);
+  color: var(--caution);
+}
+
+.add-section-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  background: transparent;
+  border: 1px dashed var(--line);
+  border-radius: 999px;
+  padding: 8px 12px;
+  margin-top: 8px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-faint);
+  cursor: pointer;
+  transition: all .14s ease;
+}
+
+.add-section-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+.add-section-form {
+  margin-top: 8px;
+  padding: 10px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+}
+
+.add-section-form input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 13px;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+
+.add-section-form-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.add-section-form-actions button {
+  flex: 1;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
 .empty-section {
   font-size: 13px;
   color: var(--ink-faint);

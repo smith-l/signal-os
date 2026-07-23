@@ -122,9 +122,14 @@ function renderSection(section, recordId) {
     <div class="section-page" id="section-page-${section.id}">
       <div class="prep-section-header">
         <h2>${section.section_title}</h2>
-        <button class="edit-section-btn" data-id="${section.id}">
-          <i class="ti ti-edit" aria-hidden="true"></i> Edit
-        </button>
+        <div class="prep-section-actions">
+          <button class="edit-section-btn" data-id="${section.id}">
+            <i class="ti ti-edit" aria-hidden="true"></i> Edit
+          </button>
+          <button class="delete-section-btn" data-id="${section.id}" data-title="${section.section_title}" title="Delete section">
+            <i class="ti ti-trash" aria-hidden="true"></i>
+          </button>
+        </div>
       </div>
 
       <div class="prep-content" id="content-view-${section.id}">
@@ -489,6 +494,17 @@ export async function openRecordView(recordId, allRecords, onBack, config) {
               ${s.section_title}
             </button>
           `).join('')}
+
+          <button class="add-section-btn" id="add-section-btn">
+            <i class="ti ti-plus" aria-hidden="true"></i> Add Section
+          </button>
+          <div class="add-section-form hidden" id="add-section-form">
+            <input type="text" id="new-section-title" placeholder="Section title..." />
+            <div class="add-section-form-actions">
+              <button class="btn-primary" id="add-section-confirm">Add</button>
+              <button class="btn-ghost" id="add-section-cancel">Cancel</button>
+            </div>
+          </div>
         </div>
       </aside>
 
@@ -622,24 +638,76 @@ function attachRecordHandlers(recordId, allRecords, sections, onBack, config) {
       document.querySelector('#section-content-area').innerHTML =
         renderSection(section, recordId)
 
-      attachSectionHandlers(recordId, sections, allRecords, config)
+      attachSectionHandlers(recordId, sections, allRecords, config, onBack)
 
       recordSidebarEl?.classList.remove('open')
       recordBackdrop?.classList.remove('visible')
     })
   })
 
+  document.querySelector('#add-section-btn')?.addEventListener('click', () => {
+    document.querySelector('#add-section-btn').classList.add('hidden')
+    document.querySelector('#add-section-form').classList.remove('hidden')
+    document.querySelector('#new-section-title')?.focus()
+  })
+
+  document.querySelector('#add-section-cancel')?.addEventListener('click', () => {
+    document.querySelector('#add-section-form').classList.add('hidden')
+    document.querySelector('#add-section-btn').classList.remove('hidden')
+  })
+
+  document.querySelector('#add-section-confirm')?.addEventListener('click', async () => {
+    const titleInput = document.querySelector('#new-section-title')
+    const title = titleInput.value.trim()
+    if (!title) return
+
+    const sectionKey = title.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || `section_${Date.now()}`
+
+    await fetch(config.prepApiBase, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        [config.prepIdParam]: recordId,
+        section_key: sectionKey,
+        section_title: title,
+        sort_order: sections.length + 1
+      })
+    })
+
+    // Full re-render — an added section changes the whole nav list and
+    // needs fresh IDs from the server, safer than patching the DOM in place
+    await openRecordView(recordId, allRecords, onBack, config)
+  })
+
   attachEditPanelHandlers(recordId, allRecords, onBack, config)
-  attachSectionHandlers(recordId, sections, allRecords, config)
+  attachSectionHandlers(recordId, sections, allRecords, config, onBack)
 }
 
-function attachSectionHandlers(recordId, sections, allRecords, config) {
+function attachSectionHandlers(recordId, sections, allRecords, config, onBack) {
 
   document.querySelectorAll('.edit-section-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const id = btn.dataset.id
       document.querySelector(`#content-view-${id}`).classList.add('hidden')
       document.querySelector(`#content-edit-${id}`).classList.remove('hidden')
+    })
+  })
+
+  document.querySelectorAll('.delete-section-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (sections.length <= 1) {
+        alert("Can't delete the last remaining section.")
+        return
+      }
+      const id = btn.dataset.id
+      const title = btn.dataset.title
+      if (!confirm(`Delete section "${title}"? This cannot be undone.`)) return
+
+      await fetch(`${config.prepApiBase}?id=${id}`, { method: 'DELETE' })
+
+      // Full re-render — deleting a section changes the nav list and which
+      // section should now be shown, safer than patching in place
+      await openRecordView(recordId, allRecords, onBack, config)
     })
   })
 
@@ -735,7 +803,6 @@ function attachSectionHandlers(recordId, sections, allRecords, config) {
         console.error('AI error:', e)
       }
 
-      
       btn.innerHTML = '<i class="ti ti-sparkles" aria-hidden="true"></i>'
       btn.disabled = false
     })
