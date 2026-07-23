@@ -2,6 +2,8 @@ function cardHTML(record, config) {
   const title = record[config.titleField]
   const subtitle = record[config.subtitleField]
   const badgeValue = config.badge ? record[config.badge.field] : null
+  const stageValue = record[config.stageField]
+  const stageClass = config.stageClassMap?.[stageValue] || ''
 
   const fieldsHtml = config.cardFields.map(f => {
     if (f.showIf && !f.showIf(record)) return ''
@@ -23,7 +25,11 @@ function cardHTML(record, config) {
           <span class="stability-badge ${config.badge.classMap[badgeValue] || 'badge-unknown'}">
             ${badgeValue}
           </span>
-        ` : ''}
+        ` : (!config.badge && stageClass ? `
+          <span class="stability-badge ${stageClass}">
+            ${stageValue}
+          </span>
+        ` : '')}
       </div>
       ${subtitle ? `<p class="card-role">${subtitle}</p>` : ''}
       ${fieldsHtml}
