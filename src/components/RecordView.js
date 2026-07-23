@@ -552,7 +552,6 @@ function attachEditPanelHandlers(recordId, allRecords, onBack, config) {
     const updatedRecord = records.find(r => String(r.id) === String(recordId))
     if (updatedRecord) {
       document.querySelector('#record-header').outerHTML = renderRecordHeader(updatedRecord, config)
-      attachEditPanelHandlers(recordId, records, onBack, config)
     }
   })
 }
