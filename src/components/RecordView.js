@@ -567,6 +567,13 @@ function attachEditPanelHandlers(recordId, allRecords, onBack, config) {
     const updatedRecord = records.find(r => String(r.id) === String(recordId))
     if (updatedRecord) {
       document.querySelector('#record-header').outerHTML = renderRecordHeader(updatedRecord, config)
+      // Only #edit-app-btn lives inside the replaced header markup and gets
+      // destroyed/recreated by the outerHTML swap above — everything else in
+      // this function (panel, backdrop, save/cancel/close/delete) lives in
+      // the separately-rendered edit panel and was never touched, so only
+      // this one listener needs rebinding. Re-running the whole handler set
+      // here previously caused duplicate inserts on every subsequent save.
+      document.querySelector('#edit-app-btn')?.addEventListener('click', openPanel)
     }
   })
 }
