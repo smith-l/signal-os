@@ -19,6 +19,27 @@
   transform: translateY(-2px);
 }
 
+.summary-card-success {
+  border-left: 3px solid var(--pass);
+}
+.summary-card-success span {
+  color: var(--pass);
+}
+
+.summary-card-warn {
+  border-left: 3px solid var(--review);
+}
+.summary-card-warn span {
+  color: var(--review);
+}
+
+.summary-card-danger {
+  border-left: 3px solid var(--caution);
+}
+.summary-card-danger span {
+  color: var(--caution);
+}
+
 .summary-grid span {
   display: block;
   font-size: 34px;
