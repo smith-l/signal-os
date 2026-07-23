@@ -153,14 +153,14 @@ export const personConfig = {
   aiApiBase: '/api/person-ai',
   idParam: 'person_id',
 
-  stages: ['Thriving', 'Steady', 'Needs Support', 'At Risk'],
+  stages: ['Exceeds Expectations', 'Meets Expectations', 'Below Expectations', 'At Risk'],
   stageField: 'support_stage',
-  activeStages: ['Thriving', 'Steady', 'Needs Support', 'At Risk'],
+  activeStages: ['Exceeds Expectations', 'Meets Expectations', 'Below Expectations', 'At Risk'],
 
   stageClassMap: {
-    'Thriving': 'support-thriving',
-    'Steady': 'support-steady',
-    'Needs Support': 'support-needs-support',
+    'Exceeds Expectations': 'support-thriving',
+    'Meets Expectations': 'support-steady',
+    'Below Expectations': 'support-needs-support',
     'At Risk': 'support-at-risk',
   },
 
@@ -176,7 +176,7 @@ export const personConfig = {
   editFields: [
     { key: 'name', label: 'Name', type: 'text' },
     { key: 'role', label: 'Role', type: 'text' },
-    { key: 'support_stage', label: 'Status', type: 'select', options: ['Thriving', 'Steady', 'Needs Support', 'At Risk'] },
+    { key: 'support_stage', label: 'Status', type: 'select', options: ['Exceeds Expectations', 'Meets Expectations', 'Below Expectations', 'At Risk'] },
     { key: 'next_action', label: 'Next Action', type: 'textarea' },
     { key: 'notes', label: 'Notes', type: 'textarea' },
   ],

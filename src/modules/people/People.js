@@ -19,9 +19,9 @@ export async function People() {
 
     <section class="summary-grid">
       <article><span>${people.length}</span><p>Team</p></article>
-      <article><span>${people.filter(p => p.support_stage === 'Needs Support').length}</span><p>Needs Support</p></article>
+      <article><span>${people.filter(p => p.support_stage === 'Below Expectations').length}</span><p>Below Expectations</p></article>
       <article><span>${people.filter(p => p.support_stage === 'At Risk').length}</span><p>At Risk</p></article>
-      <article><span>${people.filter(p => p.support_stage === 'Thriving').length}</span><p>Thriving</p></article>
+      <article><span>${people.filter(p => p.support_stage === 'Exceeds Expectations').length}</span><p>Exceeds Expectations</p></article>
     </section>
 
     ${Board(people, personConfig)}

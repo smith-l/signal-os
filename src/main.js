@@ -146,7 +146,7 @@ function attachModuleHandlers() {
       const name = document.querySelector('#person-name').value
       const role = document.querySelector('#person-role').value
       if (!name) { alert('Please enter a name'); return }
-      await createPerson({ name, role, support_stage: 'Steady' })
+      await createPerson({ name, role, support_stage: 'Meets Expectations' })
       await renderApp()
     })
   }
