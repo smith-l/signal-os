@@ -196,6 +196,9 @@ function renderEditPanel(record, config) {
       <div class="app-edit-footer">
         <button class="btn-primary" id="app-edit-save">Save</button>
         <button class="btn-ghost" id="app-edit-cancel">Cancel</button>
+        <button class="btn-danger" id="app-edit-delete" data-title="${record[config.titleField] || ''}">
+          <i class="ti ti-trash" aria-hidden="true"></i> Delete
+        </button>
       </div>
     </div>
     <div class="sidebar-backdrop" id="app-edit-backdrop"></div>
@@ -527,6 +530,18 @@ function attachEditPanelHandlers(recordId, allRecords, onBack, config) {
   document.querySelector('#app-edit-close')?.addEventListener('click', closePanel)
   document.querySelector('#app-edit-cancel')?.addEventListener('click', closePanel)
   backdrop?.addEventListener('click', closePanel)
+
+  document.querySelector('#app-edit-delete')?.addEventListener('click', async () => {
+    const deleteBtn = document.querySelector('#app-edit-delete')
+    const title = deleteBtn.dataset.title
+    if (!confirm(`Delete ${title}? This removes all prep sections and cannot be undone.`)) return
+
+    await fetch(`${config.apiBase}?id=${recordId}`, { method: 'DELETE' })
+
+    document.querySelector('#record-view').classList.add('hidden')
+    document.querySelector('#main-content').classList.remove('hidden')
+    if (onBack) await onBack()
+  })
 
   document.querySelector('#app-edit-save')?.addEventListener('click', async () => {
     const updates = { id: Number(recordId) }

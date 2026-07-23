@@ -498,6 +498,27 @@
   color: var(--ink);
 }
 
+.btn-danger {
+  background: transparent;
+  color: var(--caution);
+  border: 1px solid rgba(228,111,111,.35);
+  border-radius: 999px;
+  padding: 8px 20px;
+  font-size: 13px;
+  font-weight: 800;
+  font-family: 'Hanken Grotesk', system-ui, sans-serif;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.btn-danger:hover {
+  background: rgba(228,111,111,.1);
+  border-color: var(--caution);
+}
+
 /* AI bar */
 .ai-bar {
   display: flex;
