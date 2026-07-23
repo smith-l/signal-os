@@ -5,6 +5,7 @@ button {
 
 #add-application-btn,
 #add-project-btn,
+#add-person-btn,
 #add-story-btn,
 .add-form button,
 .panel-save {
@@ -21,6 +22,7 @@ button {
 
 #add-application-btn:hover,
 #add-project-btn:hover,
+#add-person-btn:hover,
 #add-story-btn:hover,
 .panel-save:hover {
   opacity: 0.85;
