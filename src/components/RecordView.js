@@ -735,6 +735,7 @@ function attachSectionHandlers(recordId, sections, allRecords, config) {
         console.error('AI error:', e)
       }
 
+      
       btn.innerHTML = '<i class="ti ti-sparkles" aria-hidden="true"></i>'
       btn.disabled = false
     })
