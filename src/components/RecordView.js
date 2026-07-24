@@ -137,6 +137,19 @@ function renderSection(section, recordId) {
       </div>
 
       <div class="prep-editor hidden" id="content-edit-${section.id}">
+        <div class="md-toolbar" data-textarea-id="textarea-${section.id}">
+          <button class="md-tool-btn" data-md-action="bold" title="Bold — wraps selected text in **asterisks**"><b>B</b></button>
+          <button class="md-tool-btn" data-md-action="italic" title="Italic — wraps selected text in *asterisks*"><i>i</i></button>
+          <span class="md-toolbar-divider"></span>
+          <button class="md-tool-btn" data-md-action="h2" title="Heading — adds ## before the line">H2</button>
+          <button class="md-tool-btn" data-md-action="h3" title="Sub-heading — adds ### before the line">H3</button>
+          <span class="md-toolbar-divider"></span>
+          <button class="md-tool-btn" data-md-action="bullet" title="Bullet list — adds - before each selected line"><i class="ti ti-list" aria-hidden="true"></i></button>
+          <button class="md-tool-btn" data-md-action="numbered" title="Numbered list — adds 1. 2. 3. before each selected line"><i class="ti ti-list-numbers" aria-hidden="true"></i></button>
+          <span class="md-toolbar-divider"></span>
+          <button class="md-tool-btn" data-md-action="table" title="Insert a 3-column table skeleton"><i class="ti ti-table" aria-hidden="true"></i></button>
+          <button class="md-tool-btn" data-md-action="link" title="Link — wraps selected text as [text](url)"><i class="ti ti-link" aria-hidden="true"></i></button>
+        </div>
         <textarea class="section-textarea" id="textarea-${section.id}">${cleanContent(section.content || '')}</textarea>
         <div class="editor-actions">
           <button class="save-section-btn btn-primary" data-id="${section.id}">Save</button>
@@ -320,6 +333,72 @@ function renderTaskTimeline(tasks) {
       ${rows}
     </div>
   `
+}
+
+function applyMarkdownAction(textarea, action) {
+  const start = textarea.selectionStart
+  const end = textarea.selectionEnd
+  const value = textarea.value
+  const selected = value.slice(start, end)
+
+  let newText = value
+  let newStart = start
+  let newEnd = end
+
+  const wrapSelection = (marker) => {
+    const placeholder = selected || 'text'
+    newText = value.slice(0, start) + marker + placeholder + marker + value.slice(end)
+    newStart = start + marker.length
+    newEnd = newStart + placeholder.length
+  }
+
+  const prefixLines = (linePrefix, numbered) => {
+    // Find the full lines covering the selection, even if selection is mid-line
+    const lineStart = value.lastIndexOf('\n', start - 1) + 1
+    let lineEnd = value.indexOf('\n', end)
+    if (lineEnd === -1) lineEnd = value.length
+    const block = value.slice(lineStart, lineEnd)
+    const lines = block.split('\n')
+    const prefixed = lines.map((line, i) => numbered ? `${i + 1}. ${line}` : `${linePrefix}${line}`).join('\n')
+    newText = value.slice(0, lineStart) + prefixed + value.slice(lineEnd)
+    newStart = lineStart
+    newEnd = lineStart + prefixed.length
+  }
+
+  if (action === 'bold') wrapSelection('**')
+  else if (action === 'italic') wrapSelection('*')
+  else if (action === 'h2') prefixLines('## ')
+  else if (action === 'h3') prefixLines('### ')
+  else if (action === 'bullet') prefixLines('- ')
+  else if (action === 'numbered') prefixLines('', true)
+  else if (action === 'link') {
+    const placeholder = selected || 'link text'
+    newText = value.slice(0, start) + `[${placeholder}](url)` + value.slice(end)
+    newStart = start + placeholder.length + 3
+    newEnd = newStart + 3 // selects "url" so it's easy to type over
+  }
+  else if (action === 'table') {
+    const table = '\n| Column 1 | Column 2 | Column 3 |\n|---|---|---|\n| | | |\n'
+    newText = value.slice(0, start) + table + value.slice(end)
+    newStart = newEnd = start + table.length
+  }
+
+  textarea.value = newText
+  textarea.focus()
+  textarea.setSelectionRange(newStart, newEnd)
+}
+
+function attachMarkdownToolbars() {
+  document.querySelectorAll('.md-tool-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault()
+      const toolbar = btn.closest('.md-toolbar')
+      const textareaId = toolbar.dataset.textareaId
+      const textarea = document.getElementById(textareaId)
+      if (!textarea) return
+      applyMarkdownAction(textarea, btn.dataset.mdAction)
+    })
+  })
 }
 
 function renderTaskPanel(tasks, recordId) {
@@ -684,6 +763,8 @@ function attachRecordHandlers(recordId, allRecords, sections, onBack, config) {
 }
 
 function attachSectionHandlers(recordId, sections, allRecords, config, onBack) {
+
+  attachMarkdownToolbars()
 
   document.querySelectorAll('.edit-section-btn').forEach(btn => {
     btn.addEventListener('click', () => {

@@ -520,13 +520,53 @@
 .markdown-body a:hover { text-decoration: underline; }
 
 /* Editor */
+.md-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 10px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-bottom: none;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+
+.md-tool-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--ink-muted);
+  font-size: 13px;
+  font-family: 'Hanken Grotesk', system-ui, sans-serif;
+  cursor: pointer;
+  transition: all .12s ease;
+}
+
+.md-tool-btn:hover {
+  background: var(--bg);
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+.md-toolbar-divider {
+  width: 1px;
+  height: 18px;
+  background: var(--line);
+  margin: 0 2px;
+}
+
 .section-textarea {
   width: 100%;
   min-height: 280px;
   padding: 14px;
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: var(--radius-md);
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
   color: var(--ink);
   font-size: 13px;
   line-height: 1.65;
