@@ -140,12 +140,14 @@ function renderSection(section, recordId) {
         <div class="md-toolbar" data-textarea-id="textarea-${section.id}">
           <button class="md-tool-btn" data-md-action="bold" title="Bold — wraps selected text in **asterisks**"><b>B</b></button>
           <button class="md-tool-btn" data-md-action="italic" title="Italic — wraps selected text in *asterisks*"><i>i</i></button>
+          <button class="md-tool-btn" data-md-action="underline" title="Underline — wraps selected text in <u> tags"><u>U</u></button>
           <span class="md-toolbar-divider"></span>
           <button class="md-tool-btn" data-md-action="h2" title="Heading — adds ## before the line">H2</button>
           <button class="md-tool-btn" data-md-action="h3" title="Sub-heading — adds ### before the line">H3</button>
           <span class="md-toolbar-divider"></span>
           <button class="md-tool-btn" data-md-action="bullet" title="Bullet list — adds - before each selected line"><i class="ti ti-list" aria-hidden="true"></i></button>
           <button class="md-tool-btn" data-md-action="numbered" title="Numbered list — adds 1. 2. 3. before each selected line"><i class="ti ti-list-numbers" aria-hidden="true"></i></button>
+          <button class="md-tool-btn" data-md-action="box" title="Callout box — adds > before each selected line, renders as a tinted box"><i class="ti ti-square" aria-hidden="true"></i></button>
           <span class="md-toolbar-divider"></span>
           <button class="md-tool-btn" data-md-action="table" title="Insert a 3-column table skeleton"><i class="ti ti-table" aria-hidden="true"></i></button>
           <button class="md-tool-btn" data-md-action="link" title="Link — wraps selected text as [text](url)"><i class="ti ti-link" aria-hidden="true"></i></button>
@@ -352,6 +354,13 @@ function applyMarkdownAction(textarea, action) {
     newEnd = newStart + placeholder.length
   }
 
+  const wrapSelectionAsymmetric = (openMarker, closeMarker) => {
+    const placeholder = selected || 'text'
+    newText = value.slice(0, start) + openMarker + placeholder + closeMarker + value.slice(end)
+    newStart = start + openMarker.length
+    newEnd = newStart + placeholder.length
+  }
+
   const prefixLines = (linePrefix, numbered) => {
     // Find the full lines covering the selection, even if selection is mid-line
     const lineStart = value.lastIndexOf('\n', start - 1) + 1
@@ -367,10 +376,12 @@ function applyMarkdownAction(textarea, action) {
 
   if (action === 'bold') wrapSelection('**')
   else if (action === 'italic') wrapSelection('*')
+  else if (action === 'underline') wrapSelectionAsymmetric('<u>', '</u>')
   else if (action === 'h2') prefixLines('## ')
   else if (action === 'h3') prefixLines('### ')
   else if (action === 'bullet') prefixLines('- ')
   else if (action === 'numbered') prefixLines('', true)
+  else if (action === 'box') prefixLines('> ')
   else if (action === 'link') {
     const placeholder = selected || 'link text'
     newText = value.slice(0, start) + `[${placeholder}](url)` + value.slice(end)
